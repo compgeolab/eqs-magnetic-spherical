@@ -1,4 +1,4 @@
-name: REPLACE_WITH_REPO_NAME
+name: spherical-eqs
 channels:
   - conda-forge
   - defaults
