@@ -8,30 +8,44 @@ def foward_modeling_spherical(coordinates,
     due to a set of dipoles, each with a specified magnetic moment.
 
     Parameters:
-    - coordinates (tuple of arrays): A tuple containing the spherical coordinates (longitude, latitude, radius) 
-      of the observation points. Each coordinate should be a 1D array.
-    - dipoles (tuple of arrays): A tuple containing the spherical coordinates (longitude, latitude, radius) 
-      of the source dipoles. Each dipole's position is described by a 1D array for longitude, latitude, and radius.
-    - magnetic_moments (tuple of arrays): A tuple containing the magnetic moments of the dipoles, given by three 
-      components. Each component is a 1D array.
+    ----------
+    coordinates : tuple of arrays
+        A tuple containing the spherical coordinates (longitude, latitude, radius) of the observation points. 
+        Each coordinate should be a 1D array.
+    dipoles : tuple of arrays
+        A tuple containing the spherical coordinates (longitude, latitude, radius) of the source dipoles.
+        Each dipole's position is described by a 1D array for longitude, latitude, and radius.
+    Inclination : float
+        The inclination angle of the magnetic dipole in radians.
+    Declination : float
+        The declination angle of the magnetic dipole in radians.
+    magnetic_moment : float
+        The magnetic moment magnitude of the dipoles.
 
     Returns:
-    - B_r (array): Magnetic field component in the radial direction (nT) at each observation point.
-    - B_theta (array): Magnetic field component in the theta direction (nT) at each observation point.
-    - B_phi (array): Magnetic field component in the phi direction (nT) at each observation point.
-
-    This function:
-    1. Converts latitude and longitude from degrees to radians for spherical coordinate calculations.
-    2. Calculates directional cosines and separation distances between source and observation points.
-    3. Computes intermediate matrices (H_ij) accounting for the geometry and separation between source and observation points.
-    4. Uses the magnetic moments and geometry to compute the magnetic field components in spherical coordinates.
+    -------
+    B_r : array
+        Magnetic field component in the radial direction (nT) at each observation point.
+    B_theta : array
+        Magnetic field component in the theta (polar) direction (nT) at each observation point.
+    B_phi : array
+        Magnetic field component in the phi (azimuthal) direction (nT) at each observation point.
 
     Notes:
+    ------
+    - This function models the magnetic field due to multiple dipoles in spherical coordinates.
+    - Each dipole is defined by its position in spherical coordinates (longitude, latitude, radius) 
+      and has a magnetic moment characterized by the inclination, declination, and magnitude.
+    - The function calculates directional cosines and distances between source and observation points 
+      to derive the magnetic field components.
     - The magnetic field components are returned in nanotesla (nT).
-    - The constant CM (not passed as an argument) is used to scale the magnetic field based on the source-observation geometry.
+    - `CM` is a scaling constant used in magnetic field calculations, determined by the source-observer geometry.
 
-    The function assumes that the magnetic field is modeled by the superposition of dipoles with specified magnetic moments. 
-    Each dipole is characterized by its position in spherical coordinates (longitude, latitude, radius) and its magnetic moment components.
+    The function performs the following:
+    1. Converts latitude and longitude from degrees to radians for spherical coordinate calculations.
+    2. Calculates directional cosines and separation distances between source and observation points.
+    3. Computes intermediate matrices (H_ij) to account for the geometry and separation of source and observation points.
+    4. Uses magnetic moments and directional cosines to compute the magnetic field components (B_r, B_theta, B_phi).
     """
     longitude_observed_data, latitude_observed_data, radius_observed_data = tuple(c.ravel() for c in coordinates)
     longitude_source, latitude_source, radius_source = [np.asarray(c).ravel() for c in dipoles]#tuple(c.ravel() for c in dipoles)
