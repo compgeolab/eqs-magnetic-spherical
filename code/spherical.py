@@ -1,4 +1,4 @@
-ef foward_modeling_spherical(coordinates,
+def foward_modeling_spherical(coordinates,
                                           dipoles,
                                           inclination,
                                           declination,
@@ -93,3 +93,9 @@ ef foward_modeling_spherical(coordinates,
       B_phi += (H_31 * mj_ri + H_32 * mj_thetai + H_33 * mj_phii) * 1e9
 
     return B_r, B_theta, B_phi
+
+
+
+
+
+
