@@ -1,7 +1,15 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import verde as vd
+import harmonica as hm
+import boule as bl
+import choclo
+from numpy.linalg import inv
+
+CM = choclo.constants.VACUUM_MAGNETIC_PERMEABILITY / 4 / np.pi
+
 def foward_modeling_spherical(coordinates,
                                           dipoles,
-                                          inclination,
-                                          declination,
                                           magnetic_moments):
     """
     Computes the magnetic field components in spherical coordinates at observation points 
@@ -46,15 +54,15 @@ def foward_modeling_spherical(coordinates,
     B_theta = np.zeros(len(coordinates[0]))
 
     # Calculate the directional cossines
-    n_dipoles= magnetic_moments[0].size
+    n_dipoles= dipoles[0].size
     for i in range(n_dipoles):
       longitude_source = np.deg2rad(dipoles[0][i])
       colatitude_source = np.pi/2 - np.deg2rad(dipoles[1][i])
       radius_source = dipoles[2][i]
 
-      m_jphi = np.cos(inclination) * np.cos(declination) * magnetic_moments[0][i]
-      m_jtheta = - np.cos(inclination) * np.cos(declination) * magnetic_moments[1][i]
-      m_jr = - np.sin(inclination) * magnetic_moments[2][i]
+      m_jphi = magnetic_moments[0][i]
+      m_jtheta = magnetic_moments[1][i]
+      m_jr = magnetic_moments[2][i]
 
       diff_long_obs_long_source = longitude_obs - longitude_source
       mu_ij = np.cos(colatitude_obs) * np.cos(colatitude_source) + np.sin(colatitude_obs) * np.sin(colatitude_source) * np.cos(diff_long_obs_long_source)
@@ -92,7 +100,7 @@ def foward_modeling_spherical(coordinates,
       B_theta += (H_21 * mj_ri + H_22 * mj_thetai + H_23 * mj_phii) * 1e9
       B_phi += (H_31 * mj_ri + H_32 * mj_thetai + H_33 * mj_phii) * 1e9
 
-    return B_r, B_theta, B_phi
+    return B_phi, B_theta, B_r
 
 
 
