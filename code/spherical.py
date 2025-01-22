@@ -55,7 +55,7 @@ def foward_modeling_spherical(coordinates,
 
     # Calculate the directional cossines
     n_dipoles= dipoles[0].size
-    for i in range(len(n_dipoles)):
+    for i in range(n_dipoles):
       longitude_source = np.deg2rad(dipoles[0][i])
       colatitude_source = np.pi/2 - np.deg2rad(dipoles[1][i])
       radius_source = dipoles[2][i]
@@ -101,9 +101,3 @@ def foward_modeling_spherical(coordinates,
       B_phi += (H_31 * mj_ri + H_32 * mj_thetai + H_33 * mj_phii) * 1e9
 
     return B_phi, B_theta, B_r
-
-
-
-
-
-
