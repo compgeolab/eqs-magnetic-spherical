@@ -100,4 +100,4 @@ def foward_modeling_spherical(coordinates,
       B_theta += (H_21 * mj_ri + H_22 * mj_thetai + H_23 * mj_phii) * 1e9
       B_phi += (H_31 * mj_ri + H_32 * mj_thetai + H_33 * mj_phii) * 1e9
 
-    return B_phi, B_theta, B_r
+    return B_phi, -B_theta, B_r
