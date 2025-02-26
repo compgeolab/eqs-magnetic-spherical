@@ -100,3 +100,23 @@ def foward_modeling_spherical(coordinates,
       B_phi += (H_31 * mj_ri + H_32 * mj_thetai + H_33 * mj_phii) * 1e9
 
     return B_phi, -B_theta, B_r
+
+
+def jacobian(coordinates, dipoles, inclination_source, declination_souce, inclination_field, declination_field):
+
+    coordinates = tuple(c.ravel() for c in coordinates)
+    dipoles = tuple(d.ravel() for d in dipoles)
+
+    n = coordinates[0].size
+    m = dipoles[0].size
+
+    A = np.zeros((n,m))
+
+    magnetic_moment = hm.magnetic_angles_to_vec(np.array([1]), np.array([inclination_source]), np.array([declination_souce]))
+
+    for j in range(m):
+        dipole = (dipoles[0][j],dipoles[1][j],dipoles[2][j])
+        b_field = foward_modeling_spherical(coordinates,dipole,magnetic_moment)
+        A[:,j] = hm.total_field_anomaly(b_field, inclination_field, declination_field)
+
+    return A
