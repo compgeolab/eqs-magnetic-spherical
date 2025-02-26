@@ -120,3 +120,16 @@ def jacobian(coordinates, dipoles, inclination_source, declination_souce, inclin
         A[:,j] = hm.total_field_anomaly(b_field, inclination_field, declination_field)
 
     return A
+
+def calculate_coefficients(observed_data, A, damping):
+    
+    I = np.identity(A.shape[1]) # needs to = m x m
+    # np.shape(A) = A.shape
+    
+    # The @ operator can be used for cocalculate_total_field_anomaly(grid_coord, observed_source_coord, 0, 0, 1e17, 0, 0)nventional matrix multiplication.
+    system_matrix = A.T @ A + I * damping
+    system_rhs_vector = A.T @ observed_data
+    
+    coefficients = np.linalg.solve(system_matrix, system_rhs_vector)
+    
+    return coefficients
