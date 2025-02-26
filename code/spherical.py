@@ -8,7 +8,7 @@ from numpy.linalg import inv
 
 CM = choclo.constants.VACUUM_MAGNETIC_PERMEABILITY / 4 / np.pi
 
-def foward_modeling_spherical(coordinates,
+def forward_modeling_spherical(coordinates,
                                           dipoles,
                                           magnetic_moments):
     """
@@ -116,7 +116,7 @@ def jacobian(coordinates, dipoles, inclination_source, declination_souce, inclin
 
     for j in range(m):
         dipole = (dipoles[0][j],dipoles[1][j],dipoles[2][j])
-        b_field = foward_modeling_spherical(coordinates,dipole,magnetic_moment)
+        b_field = forward_modeling_spherical(coordinates,dipole,magnetic_moment)
         A[:,j] = hm.total_field_anomaly(b_field, inclination_field, declination_field)
 
     return A
