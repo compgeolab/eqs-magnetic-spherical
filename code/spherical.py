@@ -112,7 +112,7 @@ def jacobian(coordinates, dipoles, inclination_source, declination_souce, inclin
 
     A = np.zeros((n,m))
 
-    magnetic_moment = hm.magnetic_angles_to_vec(np.array([1]), np.array([inclination_source]), np.array([declination_souce]))
+    magnetic_moment = hm.magnetic_angles_to_vec(np.array([1]), np.array([(np.radians(inclination_source))]), np.array([np.radians(declination_souce)]))
 
     for j in range(m):
         dipole = (dipoles[0][j],dipoles[1][j],dipoles[2][j])
