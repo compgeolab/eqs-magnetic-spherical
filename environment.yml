@@ -5,6 +5,7 @@ channels:
 dependencies:
   # Should be on every project
   - python==3.10.*
+  - pip
   - numpy
   - scipy
   - matplotlib
@@ -15,14 +16,14 @@ dependencies:
   - tectonic
   # Project specific dependencies
   - pandas
-  - scikit-image
   - xarray
   - netcdf4
-  # For stereonets
-  - mplstereonet
+  - numba
   # Fatiando
   - boule
   - pooch
   - verde
   - harmonica
   - choclo
+  - pip:
+      - git+https://github.com/fatiando/bordado
