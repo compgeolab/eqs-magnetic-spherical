@@ -55,11 +55,12 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     Each dipole is characterized by its position in spherical coordinates (longitude, latitude, radius) and its magnetic moment components.
     """
     coordinates = bd.check_coordinates(coordinates)
-    dipoles = bd.check_dipoles(dipoles)
-    magnetic_moments = bd.check_magnetic_moments(magnetic_moments)
+    dipoles = bd.check_coordinates(dipoles)
+    magnetic_moments = bd.check_coordinates(magnetic_moments)
 
     # Convert to 1D arrays to make it easier to loop over them
     shape = coordinates[0].shape
+    n_data = coordinates[0].size
     coordinates = tuple(c.ravel() for c in coordinates)
     dipoles = tuple(c.ravel() for c in dipoles)
     magnetic_moments = tuple(c.ravel() for c in magnetic_moments)
@@ -69,15 +70,15 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     colatitude = np.pi / 2 - np.deg2rad(coordinates[1])
     radius = coordinates[2]
 
-    b_lon = np.zeros(len(coordinates[0]))
-    b_colat = np.zeros(len(coordinates[0]))
-    b_radial = np.zeros(len(coordinates[0]))
+    b_lon = np.zeros(n_data)
+    b_colat = np.zeros(n_data)
+    b_radial = np.zeros(n_data)
     _dipole_magnetic_spherical_fast(
         longitude,
         colatitude,
         radius,
-        dipoles[0],
-        dipoles[1],
+        np.radians(dipoles[0]),
+        np.radians(90 - dipoles[1]),
         dipoles[2],
         magnetic_moments[0],
         magnetic_moments[1],
@@ -94,6 +95,11 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
 
     # Convert colatitude to latitude
     b_lat = -b_colat
+
+    # Rename things back to the original coordinate shapes
+    b_lon = b_lon.reshape(shape)
+    b_lat = b_lat.reshape(shape)
+    b_radial = b_radial.reshape(shape)
 
     return b_lon, b_lat, b_radial
 
