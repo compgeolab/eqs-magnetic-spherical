@@ -83,11 +83,6 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
         b_radial,
     )
 
-    # Convert from T to nT
-    b_lon *= 1e9
-    b_colat *= 1e9
-    b_radial *= 1e9
-
     # Convert colatitude to latitude
     b_lat = -b_colat
 
@@ -99,6 +94,7 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     return b_lon, b_lat, b_radial
 
 
+@numba.jit(nopython=True, parallel=True)
 def _dipole_magnetic_spherical_fast(
     longitude,
     colatitude,
@@ -114,92 +110,124 @@ def _dipole_magnetic_spherical_fast(
     b_radial,
 ):
     n_dipoles = longitude_d.size
-    # n_data = longitude.size
-    sin_colat = np.sin(colatitude)
-    cos_colat = np.sqrt(1 - sin_colat**2)
-    for j in range(n_dipoles):
-        sin_lon = np.sin(longitude - longitude_d[j])
-        cos_lon = np.sqrt(1 - sin_lon**2)
+    n_data = longitude.size
+    for j in numba.prange(n_dipoles):
         sin_colat_d = np.sin(colatitude_d[j])
         cos_colat_d = np.sqrt(1 - sin_colat_d**2)
-        mu_ij = cos_colat * cos_colat_d + sin_colat * sin_colat_d * cos_lon
-        ri_dot_thetaj = -cos_colat * sin_colat_d + sin_colat * cos_colat_d * cos_lon
-        ri_dot_phij = sin_colat * sin_lon
-        thetai_dot_rj = -sin_colat * cos_colat_d + cos_colat * sin_colat_d * cos_lon
-        thetai_dot_thetaj = sin_colat * sin_colat_d + cos_colat * cos_colat_d * cos_lon
-        thetai_dot_phij = cos_colat * sin_lon
-        phii_dot_rj = -sin_colat_d * sin_lon
-        phii_dot_thetaj = -cos_colat_d * sin_lon
-        phii_dot_phij = cos_lon
+        for i in range(n_data):
+            sin_colat = np.sin(colatitude[i])
+            cos_colat = np.sqrt(1 - sin_colat**2)
+            sin_lon = np.sin(longitude[i] - longitude_d[j])
+            cos_lon = np.sqrt(1 - sin_lon**2)
+            mu_ij = cos_colat * cos_colat_d + sin_colat * sin_colat_d * cos_lon
+            ri_dot_thetaj = -cos_colat * sin_colat_d + sin_colat * cos_colat_d * cos_lon
+            ri_dot_phij = sin_colat * sin_lon
+            thetai_dot_rj = -sin_colat * cos_colat_d + cos_colat * sin_colat_d * cos_lon
+            thetai_dot_thetaj = (
+                sin_colat * sin_colat_d + cos_colat * cos_colat_d * cos_lon
+            )
+            thetai_dot_phij = cos_colat * sin_lon
+            phii_dot_rj = -sin_colat_d * sin_lon
+            phii_dot_thetaj = -cos_colat_d * sin_lon
+            phii_dot_phij = cos_lon
 
-        # Distance r_ij between the computation point and the dipole
-        r_ij = np.sqrt(
-            (radius**2) + (radius_d[j] ** 2) - 2 * radius * radius_d[j] * mu_ij
-        )
-        r_ij2 = r_ij**2
+            # Distance r_ij between the computation point and the dipole
+            r_ij = np.sqrt(
+                (radius[i] ** 2)
+                + (radius_d[j] ** 2)
+                - 2 * radius[i] * radius_d[j] * mu_ij
+            )
+            r_ij2 = r_ij**2
 
-        # Define magnetic field terms
-        CM_rij3 = CM / r_ij**3
-        H_11 = CM_rij3 * (
-            3
-            * ((radius - radius_d[j] * mu_ij) * (radius * mu_ij - radius_d[j]) / r_ij2)
-            - mu_ij
-        )
-        H_12 = CM_rij3 * (
-            3 * ((radius - radius_d[j] * mu_ij) * (radius * ri_dot_thetaj) / r_ij2)
-            - ri_dot_thetaj
-        )
-        H_13 = CM_rij3 * (
-            3 * ((radius - radius_d[j] * mu_ij) * (radius * ri_dot_phij) / r_ij2)
-            - ri_dot_phij
-        )
-        H_21 = -CM_rij3 * (
-            3 * ((radius_d[j] * thetai_dot_rj) * (radius * mu_ij - radius_d[j]) / r_ij2)
-            + thetai_dot_rj
-        )
-        H_22 = -CM_rij3 * (
-            3 * ((radius_d[j] * thetai_dot_rj) * (radius * ri_dot_thetaj) / r_ij2)
-            + thetai_dot_thetaj
-        )
-        H_23 = -CM_rij3 * (
-            3 * ((radius_d[j] * thetai_dot_rj) * (radius * ri_dot_phij) / r_ij2)
-            + thetai_dot_phij
-        )
-        H_31 = -CM_rij3 * (
-            3 * ((radius_d[j] * phii_dot_rj) * (radius * mu_ij - radius_d[j]) / r_ij2)
-            + phii_dot_rj
-        )
-        H_32 = -CM_rij3 * (
-            3 * ((radius_d[j] * phii_dot_rj) * (radius * ri_dot_thetaj) / r_ij2)
-            + phii_dot_thetaj
-        )
-        H_33 = -CM_rij3 * (
-            3 * ((radius_d[j] * phii_dot_rj * radius * ri_dot_phij) / r_ij2)
-            + phii_dot_phij
-        )
+            # Define magnetic field terms
+            CM_rij3 = CM / r_ij**3
+            H_11 = CM_rij3 * (
+                3
+                * (
+                    (radius[i] - radius_d[j] * mu_ij)
+                    * (radius[i] * mu_ij - radius_d[j])
+                    / r_ij2
+                )
+                - mu_ij
+            )
+            H_12 = CM_rij3 * (
+                3
+                * (
+                    (radius[i] - radius_d[j] * mu_ij)
+                    * (radius[i] * ri_dot_thetaj)
+                    / r_ij2
+                )
+                - ri_dot_thetaj
+            )
+            H_13 = CM_rij3 * (
+                3
+                * (
+                    (radius[i] - radius_d[j] * mu_ij)
+                    * (radius[i] * ri_dot_phij)
+                    / r_ij2
+                )
+                - ri_dot_phij
+            )
+            H_21 = -CM_rij3 * (
+                3
+                * (
+                    (radius_d[j] * thetai_dot_rj)
+                    * (radius[i] * mu_ij - radius_d[j])
+                    / r_ij2
+                )
+                + thetai_dot_rj
+            )
+            H_22 = -CM_rij3 * (
+                3
+                * ((radius_d[j] * thetai_dot_rj) * (radius[i] * ri_dot_thetaj) / r_ij2)
+                + thetai_dot_thetaj
+            )
+            H_23 = -CM_rij3 * (
+                3 * ((radius_d[j] * thetai_dot_rj) * (radius[i] * ri_dot_phij) / r_ij2)
+                + thetai_dot_phij
+            )
+            H_31 = -CM_rij3 * (
+                3
+                * (
+                    (radius_d[j] * phii_dot_rj)
+                    * (radius[i] * mu_ij - radius_d[j])
+                    / r_ij2
+                )
+                + phii_dot_rj
+            )
+            H_32 = -CM_rij3 * (
+                3 * ((radius_d[j] * phii_dot_rj) * (radius[i] * ri_dot_thetaj) / r_ij2)
+                + phii_dot_thetaj
+            )
+            H_33 = -CM_rij3 * (
+                3 * ((radius_d[j] * phii_dot_rj * radius[i] * ri_dot_phij) / r_ij2)
+                + phii_dot_phij
+            )
 
-        # ESTUDAR A TEORIA DE NOVO E ESCREVER AQUI O QUE ESSA CONTA FAZ
-        # Parece ser uma conversão de sistemas de coordenadas.
-        # Convert the magnetic moment to the local Cartesian system of the
-        # observation point P.
-        m_radial_p = (
-            m_radial[j] * mu_ij + m_colat[j] * ri_dot_thetaj + m_lon[j] * ri_dot_phij
-        )
-        m_colat_p = (
-            m_radial[j] * thetai_dot_rj
-            + m_colat[j] * thetai_dot_thetaj
-            + m_lon[j] * thetai_dot_phij
-        )
-        m_lon_p = (
-            m_radial[j] * phii_dot_rj
-            + m_colat[j] * phii_dot_thetaj
-            + m_lon[j] * phii_dot_phij
-        )
+            # ESTUDAR A TEORIA DE NOVO E ESCREVER AQUI O QUE ESSA CONTA FAZ
+            # Parece ser uma conversão de sistemas de coordenadas.
+            # Convert the magnetic moment to the local Cartesian system of the
+            # observation point P.
+            m_radial_p = (
+                m_radial[j] * mu_ij
+                + m_colat[j] * ri_dot_thetaj
+                + m_lon[j] * ri_dot_phij
+            )
+            m_colat_p = (
+                m_radial[j] * thetai_dot_rj
+                + m_colat[j] * thetai_dot_thetaj
+                + m_lon[j] * thetai_dot_phij
+            )
+            m_lon_p = (
+                m_radial[j] * phii_dot_rj
+                + m_colat[j] * phii_dot_thetaj
+                + m_lon[j] * phii_dot_phij
+            )
 
-        # Calculate final magnetic field components
-        b_lon += H_31 * m_radial_p + H_32 * m_colat_p + H_33 * m_lon_p
-        b_colat += H_21 * m_radial_p + H_22 * m_colat_p + H_23 * m_lon_p
-        b_radial += H_11 * m_radial_p + H_12 * m_colat_p + H_13 * m_lon_p
+            # Calculate final magnetic field components and convert them from T to nT
+            b_lon[i] += (H_31 * m_radial_p + H_32 * m_colat_p + H_33 * m_lon_p) * 1e9
+            b_colat[i] += (H_21 * m_radial_p + H_22 * m_colat_p + H_23 * m_lon_p) * 1e9
+            b_radial[i] += (H_11 * m_radial_p + H_12 * m_colat_p + H_13 * m_lon_p) * 1e9
 
 
 def jacobian(
