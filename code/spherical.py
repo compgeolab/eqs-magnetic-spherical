@@ -65,18 +65,13 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     dipoles = tuple(c.ravel() for c in dipoles)
     magnetic_moments = tuple(c.ravel() for c in magnetic_moments)
 
-    # Convert to radians and colatitude
-    longitude = np.deg2rad(coordinates[0])
-    colatitude = np.pi / 2 - np.deg2rad(coordinates[1])
-    radius = coordinates[2]
-
     b_lon = np.zeros(n_data)
     b_colat = np.zeros(n_data)
     b_radial = np.zeros(n_data)
     _dipole_magnetic_spherical_fast(
-        longitude,
-        colatitude,
-        radius,
+        np.radians(coordinates[0]),
+        np.radians(90 - coordinates[1]),
+        coordinates[2],
         np.radians(dipoles[0]),
         np.radians(90 - dipoles[1]),
         dipoles[2],
@@ -120,13 +115,13 @@ def _dipole_magnetic_spherical_fast(
 ):
     n_dipoles = longitude_d.size
     # n_data = longitude.size
-    cos_colat = np.cos(colatitude)
-    sin_colat = np.sqrt(1 - cos_colat**2)
+    sin_colat = np.sin(colatitude)
+    cos_colat = np.sqrt(1 - sin_colat**2)
     for j in range(n_dipoles):
-        cos_lon = np.cos(longitude - longitude_d[j])
-        sin_lon = np.sqrt(1 - cos_lon**2)
-        cos_colat_d = np.cos(colatitude_d[j])
-        sin_colat_d = np.sqrt(1 - cos_colat_d**2)
+        sin_lon = np.sin(longitude - longitude_d[j])
+        cos_lon = np.sqrt(1 - sin_lon**2)
+        sin_colat_d = np.sin(colatitude_d[j])
+        cos_colat_d = np.sqrt(1 - sin_colat_d**2)
         mu_ij = cos_colat * cos_colat_d + sin_colat * sin_colat_d * cos_lon
         ri_dot_thetaj = -cos_colat * sin_colat_d + sin_colat * cos_colat_d * cos_lon
         ri_dot_phij = sin_colat * sin_lon
