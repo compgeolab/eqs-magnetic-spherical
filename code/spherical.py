@@ -110,12 +110,12 @@ def _dipole_magnetic_spherical_fast(
     n_data = longitude.size
     for j in numba.prange(n_dipoles):
         sin_colat_d = np.sin(colatitude_d[j])
-        cos_colat_d = np.sqrt(1 - sin_colat_d**2)
+        cos_colat_d = np.cos(colatitude_d[j])
         for i in range(n_data):
             sin_colat = np.sin(colatitude[i])
-            cos_colat = np.sqrt(1 - sin_colat**2)
+            cos_colat = np.cos(colatitude[i])
             sin_lon = np.sin(longitude[i] - longitude_d[j])
-            cos_lon = np.sqrt(1 - sin_lon**2)
+            cos_lon = np.cos(longitude[i] - longitude_d[j])
             b_lon_j, b_lat_j, b_radial_j = _kernel(
                 cos_lon,
                 sin_lon,
