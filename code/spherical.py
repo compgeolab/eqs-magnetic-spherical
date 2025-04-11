@@ -66,7 +66,7 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     magnetic_moments = tuple(c.ravel() for c in magnetic_moments)
 
     b_lon = np.zeros(n_data)
-    b_colat = np.zeros(n_data)
+    b_lat = np.zeros(n_data)
     b_radial = np.zeros(n_data)
     _dipole_magnetic_spherical_fast(
         np.radians(coordinates[0]),
@@ -79,17 +79,9 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
         magnetic_moments[1],
         magnetic_moments[2],
         b_lon,
-        b_colat,
+        b_lat,
         b_radial,
     )
-
-    # Convert from T to nT
-    b_lon *= 1e9
-    b_colat *= 1e9
-    b_radial *= 1e9
-
-    # Convert colatitude to latitude
-    b_lat = -b_colat
 
     # Rename things back to the original coordinate shapes
     b_lon = b_lon.reshape(shape)
@@ -99,6 +91,7 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     return b_lon, b_lat, b_radial
 
 
+@numba.jit(nopython=True, parallel=True)
 def _dipole_magnetic_spherical_fast(
     longitude,
     colatitude,
@@ -110,96 +103,119 @@ def _dipole_magnetic_spherical_fast(
     m_colat,
     m_radial,
     b_lon,
-    b_colat,
+    b_lat,
     b_radial,
 ):
     n_dipoles = longitude_d.size
-    # n_data = longitude.size
-    sin_colat = np.sin(colatitude)
-    cos_colat = np.sqrt(1 - sin_colat**2)
-    for j in range(n_dipoles):
-        sin_lon = np.sin(longitude - longitude_d[j])
-        cos_lon = np.sqrt(1 - sin_lon**2)
+    n_data = longitude.size
+    for j in numba.prange(n_dipoles):
         sin_colat_d = np.sin(colatitude_d[j])
-        cos_colat_d = np.sqrt(1 - sin_colat_d**2)
-        mu_ij = cos_colat * cos_colat_d + sin_colat * sin_colat_d * cos_lon
-        ri_dot_thetaj = -cos_colat * sin_colat_d + sin_colat * cos_colat_d * cos_lon
-        ri_dot_phij = sin_colat * sin_lon
-        thetai_dot_rj = -sin_colat * cos_colat_d + cos_colat * sin_colat_d * cos_lon
-        thetai_dot_thetaj = sin_colat * sin_colat_d + cos_colat * cos_colat_d * cos_lon
-        thetai_dot_phij = cos_colat * sin_lon
-        phii_dot_rj = -sin_colat_d * sin_lon
-        phii_dot_thetaj = -cos_colat_d * sin_lon
-        phii_dot_phij = cos_lon
+        cos_colat_d = np.cos(colatitude_d[j])
+        for i in range(n_data):
+            sin_colat = np.sin(colatitude[i])
+            cos_colat = np.cos(colatitude[i])
+            sin_lon = np.sin(longitude[i] - longitude_d[j])
+            cos_lon = np.cos(longitude[i] - longitude_d[j])
+            b_lon_j, b_lat_j, b_radial_j = _kernel(
+                cos_lon,
+                sin_lon,
+                cos_colat,
+                sin_colat,
+                radius[i],
+                cos_colat_d,
+                sin_colat_d,
+                radius_d[j],
+                m_lon[j],
+                m_colat[j],
+                m_radial[j],
+            )
+            b_lon[i] += b_lon_j
+            b_lat[i] += b_lat_j
+            b_radial[i] += b_radial_j
 
-        # Distance r_ij between the computation point and the dipole
-        r_ij = np.sqrt(
-            (radius**2) + (radius_d[j] ** 2) - 2 * radius * radius_d[j] * mu_ij
-        )
-        r_ij2 = r_ij**2
 
-        # Define magnetic field terms
-        CM_rij3 = CM / r_ij**3
-        H_11 = CM_rij3 * (
-            3
-            * ((radius - radius_d[j] * mu_ij) * (radius * mu_ij - radius_d[j]) / r_ij2)
-            - mu_ij
-        )
-        H_12 = CM_rij3 * (
-            3 * ((radius - radius_d[j] * mu_ij) * (radius * ri_dot_thetaj) / r_ij2)
-            - ri_dot_thetaj
-        )
-        H_13 = CM_rij3 * (
-            3 * ((radius - radius_d[j] * mu_ij) * (radius * ri_dot_phij) / r_ij2)
-            - ri_dot_phij
-        )
-        H_21 = -CM_rij3 * (
-            3 * ((radius_d[j] * thetai_dot_rj) * (radius * mu_ij - radius_d[j]) / r_ij2)
-            + thetai_dot_rj
-        )
-        H_22 = -CM_rij3 * (
-            3 * ((radius_d[j] * thetai_dot_rj) * (radius * ri_dot_thetaj) / r_ij2)
-            + thetai_dot_thetaj
-        )
-        H_23 = -CM_rij3 * (
-            3 * ((radius_d[j] * thetai_dot_rj) * (radius * ri_dot_phij) / r_ij2)
-            + thetai_dot_phij
-        )
-        H_31 = -CM_rij3 * (
-            3 * ((radius_d[j] * phii_dot_rj) * (radius * mu_ij - radius_d[j]) / r_ij2)
-            + phii_dot_rj
-        )
-        H_32 = -CM_rij3 * (
-            3 * ((radius_d[j] * phii_dot_rj) * (radius * ri_dot_thetaj) / r_ij2)
-            + phii_dot_thetaj
-        )
-        H_33 = -CM_rij3 * (
-            3 * ((radius_d[j] * phii_dot_rj * radius * ri_dot_phij) / r_ij2)
-            + phii_dot_phij
-        )
+@numba.jit(nopython=True)
+def _kernel(
+    cos_lon,
+    sin_lon,
+    cos_colat,
+    sin_colat,
+    radius,
+    cos_colat_d,
+    sin_colat_d,
+    radius_d,
+    m_lon,
+    m_colat,
+    m_radial,
+):
+    """
+    Just the forward modeling kernel equations.
+    """
+    mu_ij = cos_colat * cos_colat_d + sin_colat * sin_colat_d * cos_lon
+    ri_dot_thetaj = -cos_colat * sin_colat_d + sin_colat * cos_colat_d * cos_lon
+    ri_dot_phij = sin_colat * sin_lon
+    thetai_dot_rj = -sin_colat * cos_colat_d + cos_colat * sin_colat_d * cos_lon
+    thetai_dot_thetaj = sin_colat * sin_colat_d + cos_colat * cos_colat_d * cos_lon
+    thetai_dot_phij = cos_colat * sin_lon
+    phii_dot_rj = -sin_colat_d * sin_lon
+    phii_dot_thetaj = -cos_colat_d * sin_lon
+    phii_dot_phij = cos_lon
 
-        # ESTUDAR A TEORIA DE NOVO E ESCREVER AQUI O QUE ESSA CONTA FAZ
-        # Parece ser uma conversão de sistemas de coordenadas.
-        # Convert the magnetic moment to the local Cartesian system of the
-        # observation point P.
-        m_radial_p = (
-            m_radial[j] * mu_ij + m_colat[j] * ri_dot_thetaj + m_lon[j] * ri_dot_phij
-        )
-        m_colat_p = (
-            m_radial[j] * thetai_dot_rj
-            + m_colat[j] * thetai_dot_thetaj
-            + m_lon[j] * thetai_dot_phij
-        )
-        m_lon_p = (
-            m_radial[j] * phii_dot_rj
-            + m_colat[j] * phii_dot_thetaj
-            + m_lon[j] * phii_dot_phij
-        )
+    # Distance r_ij between the computation point and the dipole
+    r_ij = np.sqrt((radius**2) + (radius_d**2) - 2 * radius * radius_d * mu_ij)
+    r_ij2 = r_ij**2
 
-        # Calculate final magnetic field components
-        b_lon += H_31 * m_radial_p + H_32 * m_colat_p + H_33 * m_lon_p
-        b_colat += H_21 * m_radial_p + H_22 * m_colat_p + H_23 * m_lon_p
-        b_radial += H_11 * m_radial_p + H_12 * m_colat_p + H_13 * m_lon_p
+    # Define magnetic field terms
+    CM_rij3 = CM / r_ij**3
+    H_11 = CM_rij3 * (
+        3 * ((radius - radius_d * mu_ij) * (radius * mu_ij - radius_d) / r_ij2) - mu_ij
+    )
+    H_12 = CM_rij3 * (
+        3 * ((radius - radius_d * mu_ij) * (radius * ri_dot_thetaj) / r_ij2)
+        - ri_dot_thetaj
+    )
+    H_13 = CM_rij3 * (
+        3 * ((radius - radius_d * mu_ij) * (radius * ri_dot_phij) / r_ij2) - ri_dot_phij
+    )
+    H_21 = -CM_rij3 * (
+        3 * ((radius_d * thetai_dot_rj) * (radius * mu_ij - radius_d) / r_ij2)
+        + thetai_dot_rj
+    )
+    H_22 = -CM_rij3 * (
+        3 * ((radius_d * thetai_dot_rj) * (radius * ri_dot_thetaj) / r_ij2)
+        + thetai_dot_thetaj
+    )
+    H_23 = -CM_rij3 * (
+        3 * ((radius_d * thetai_dot_rj) * (radius * ri_dot_phij) / r_ij2)
+        + thetai_dot_phij
+    )
+    H_31 = -CM_rij3 * (
+        3 * ((radius_d * phii_dot_rj) * (radius * mu_ij - radius_d) / r_ij2)
+        + phii_dot_rj
+    )
+    H_32 = -CM_rij3 * (
+        3 * ((radius_d * phii_dot_rj) * (radius * ri_dot_thetaj) / r_ij2)
+        + phii_dot_thetaj
+    )
+    H_33 = -CM_rij3 * (
+        3 * ((radius_d * phii_dot_rj * radius * ri_dot_phij) / r_ij2) + phii_dot_phij
+    )
+
+    # Convert the magnetic moment to the local Cartesian system of the
+    # observation point P.
+    m_radial_p = m_radial * mu_ij + m_colat * ri_dot_thetaj + m_lon * ri_dot_phij
+    m_colat_p = (
+        m_radial * thetai_dot_rj + m_colat * thetai_dot_thetaj + m_lon * thetai_dot_phij
+    )
+    m_lon_p = m_radial * phii_dot_rj + m_colat * phii_dot_thetaj + m_lon * phii_dot_phij
+
+    # Calculate final magnetic field components and convert them from T to nT
+    b_lon = (H_31 * m_radial_p + H_32 * m_colat_p + H_33 * m_lon_p) * 1e9
+    # The - converts colatitude to latitude.
+    b_lat = -(H_21 * m_radial_p + H_22 * m_colat_p + H_23 * m_lon_p) * 1e9
+    b_radial = (H_11 * m_radial_p + H_12 * m_colat_p + H_13 * m_lon_p) * 1e9
+
+    return b_lon, b_lat, b_radial
 
 
 def jacobian(
@@ -210,25 +226,80 @@ def jacobian(
     inclination_field,
     declination_field,
 ):
-
+    coordinates = bd.check_coordinates(coordinates)
+    dipoles = bd.check_coordinates(dipoles)
     coordinates = tuple(c.ravel() for c in coordinates)
-    dipoles = tuple(d.ravel() for d in dipoles)
+    dipoles = tuple(c.ravel() for c in dipoles)
+    n_data = coordinates[0].size
+    n_params = dipoles[0].size
 
-    n = coordinates[0].size
-    m = dipoles[0].size
-
-    A = np.zeros((n, m))
-
-    magnetic_moment = hm.magnetic_angles_to_vec(
-        np.array([1]), np.array([inclination_source]), np.array([declination_souce])
+    unit_magnetic_moment = hm.magnetic_angles_to_vec(
+        1, inclination_source, declination_souce
+    )
+    main_field =  hm.magnetic_angles_to_vec(
+        1, inclination_field, declination_field
     )
 
-    for j in range(m):
-        dipole = (dipoles[0][j], dipoles[1][j], dipoles[2][j])
-        b_field = forward_modeling_spherical(coordinates, dipole, magnetic_moment)
-        A[:, j] = hm.total_field_anomaly(b_field, inclination_field, declination_field)
+    A = np.empty((n_data, n_params))
+    _jacobian_fast(
+        np.radians(coordinates[0]),
+        np.radians(90 - coordinates[1]),
+        coordinates[2],
+        np.radians(dipoles[0]),
+        np.radians(90 - dipoles[1]),
+        dipoles[2],
+        unit_magnetic_moment[0],
+        unit_magnetic_moment[1],
+        unit_magnetic_moment[2],
+        main_field[0],
+        main_field[1],
+        main_field[2],
+        A,
+    )
 
     return A
+
+
+@numba.jit(nopython=True, parallel=True)
+def _jacobian_fast(
+    longitude,
+    colatitude,
+    radius,
+    longitude_d,
+    colatitude_d,
+    radius_d,
+    m_lon,
+    m_colat,
+    m_radial,
+    f_lon,
+    f_lat,
+    f_radial,
+    A,
+):
+    n_dipoles = longitude_d.size
+    n_data = longitude.size
+    for j in numba.prange(n_dipoles):
+        sin_colat_d = np.sin(colatitude_d[j])
+        cos_colat_d = np.cos(colatitude_d[j])
+        for i in range(n_data):
+            sin_colat = np.sin(colatitude[i])
+            cos_colat = np.cos(colatitude[i])
+            sin_lon = np.sin(longitude[i] - longitude_d[j])
+            cos_lon = np.cos(longitude[i] - longitude_d[j])
+            b_lon, b_lat, b_radial = _kernel(
+                cos_lon,
+                sin_lon,
+                cos_colat,
+                sin_colat,
+                radius[i],
+                cos_colat_d,
+                sin_colat_d,
+                radius_d[j],
+                m_lon,
+                m_colat,
+                m_radial,
+            )
+            A[i, j] = f_lon * b_lon + f_lat * b_lat + f_radial * b_radial
 
 
 def calculate_coefficients(observed_data, A, damping):
