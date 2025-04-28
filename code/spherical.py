@@ -58,6 +58,8 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     dipoles = bd.check_coordinates(dipoles)
     magnetic_moments = bd.check_coordinates(magnetic_moments)
 
+    
+
     # Convert to 1D arrays to make it easier to loop over them
     shape = coordinates[0].shape
     n_data = coordinates[0].size
@@ -87,6 +89,7 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     b_lon = b_lon.reshape(shape)
     b_lat = b_lat.reshape(shape)
     b_radial = b_radial.reshape(shape)
+
 
     return b_lon, b_lat, b_radial
 
@@ -375,3 +378,26 @@ def profile_points(start, end, npoints, depth=0):
     dike = np.array([longitude]), np.array([latitude]), np.array([depth_array])
 
     return dike
+
+def spherical_to_geodetic(sph_latitude, geod_latitude, b_lon, b_lat, b_radial):
+
+    sph_latitude = np.radians(sph_latitude)
+    geod_latitude = np.radians(geod_latitude)
+
+    w11 = 1
+    w12 = 0
+    w13 = 0
+    
+    w21 = 0
+    w22 = np.cos(sph_latitude-geod_latitude)
+    w23 = np.sin(sph_latitude-geod_latitude)
+    
+    w31 = 0
+    w32 = - np.sin(sph_latitude-geod_latitude)
+    w33 = np.cos(sph_latitude-geod_latitude)
+    
+    lon_geodetic = (w11 * b_lon + w12 * b_lat + w13 * b_radial) 
+    lat_geodetic = (w21 * b_lon + w22 * b_lat + w23 * b_radial) 
+    radial_geodetic = (w31 * b_lon + w32 * b_lat + w33 * b_radial) 
+    
+    return lon_geodetic, lat_geodetic, radial_geodetic
