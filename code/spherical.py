@@ -381,20 +381,21 @@ def profile_points(start, end, npoints, depth=0):
 
 def spherical_to_geodetic(sph_latitude, geod_latitude, b_lon, b_lat, b_radial):
 
-    sph_latitude = np.radians(sph_latitude)
-    geod_latitude = np.radians(geod_latitude)
+    angle = np.radians(sph_latitude - geod_latitude)
+    cos = np.cos(angle)
+    sin = np.sin(angle)
 
     w11 = 1
     w12 = 0
     w13 = 0
     
     w21 = 0
-    w22 = np.cos(sph_latitude-geod_latitude)
-    w23 = np.sin(sph_latitude-geod_latitude)
+    w22 = cos
+    w23 = sin
     
     w31 = 0
-    w32 = - np.sin(sph_latitude-geod_latitude)
-    w33 = np.cos(sph_latitude-geod_latitude)
+    w32 = -sin
+    w33 = cos
     
     lon_geodetic = (w11 * b_lon + w12 * b_lat + w13 * b_radial) 
     lat_geodetic = (w21 * b_lon + w22 * b_lat + w23 * b_radial) 
