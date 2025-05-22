@@ -3,9 +3,9 @@ import harmonica as hm
 import choclo
 import bordado as bd
 import numba
+import boule as bl
 
 CM = choclo.constants.VACUUM_MAGNETIC_PERMEABILITY / 4 / np.pi
-
 
 def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     """
@@ -58,8 +58,6 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     dipoles = bd.check_coordinates(dipoles)
     magnetic_moments = bd.check_coordinates(magnetic_moments)
 
-    
-
     # Convert to 1D arrays to make it easier to loop over them
     shape = coordinates[0].shape
     n_data = coordinates[0].size
@@ -92,6 +90,28 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
 
 
     return b_lon, b_lat, b_radial
+
+def dipole_magnetic_geodetic(geodetic_coordinates, geodetic_dipoles, geodetic_magnetic_moments):
+    """
+    Calculate the magnetic field of dipoles in geodetic coordinates
+    """
+    geodetic_coordinates = bd.check_coordinates(geodetic_coordinates)
+    geodetic_dipoles = bd.check_coordinates(geodetic_dipoles)
+    geodetic_magnetic_moments = bd.check_coordinates(geodetic_magnetic_moments)
+
+    geodetic_coordinates = tuple(c.ravel() for c in geodetic_coordinates)
+    geodetic_dipoles = tuple(c.ravel() for c in geodetic_dipoles)
+    geodetic_magnetic_moments = tuple(c.ravel() for c in geodetic_magnetic_moments)
+
+    coordinates = bl.WGS84.geodetic_to_spherical(geodetic_coordinates[0], geodetic_coordinates[1], geodetic_coordinates[2])
+    dipoles = bl.WGS84.geodetic_to_spherical(geodetic_dipoles[0], geodetic_dipoles[1], geodetic_dipoles[2])
+    magnetic_moments = geodetic_to_spherical(dipoles[1], geodetic_dipoles[1], geodetic_magnetic_moments[0], geodetic_magnetic_moments[1],geodetic_magnetic_moments[2])
+
+    b_lon, b_lat, b_radial = dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments)
+
+    b_lon, b_lat, b_height = spherical_to_geodetic(coordinates[1], geodetic_coordinates[1], b_lat, b_lon, b_radial)
+
+    return b_lon, b_lat, b_height
 
 
 @numba.jit(nopython=True, parallel=True)
@@ -379,7 +399,7 @@ def profile_points(start, end, npoints, depth=0):
 
     return dike
 
-def spherical_to_geodetic(sph_latitude, geod_latitude, b_lon, b_lat, b_radial):
+def spherical_to_geodetic(sph_latitude, geod_latitude, vec_lon, vec_lat, vec_radial):
 
     angle = np.radians(sph_latitude - geod_latitude)
     cos = np.cos(angle)
@@ -397,8 +417,32 @@ def spherical_to_geodetic(sph_latitude, geod_latitude, b_lon, b_lat, b_radial):
     w32 = -sin
     w33 = cos
     
-    lon_geodetic = (w11 * b_lon + w12 * b_lat + w13 * b_radial) 
-    lat_geodetic = (w21 * b_lon + w22 * b_lat + w23 * b_radial) 
-    radial_geodetic = (w31 * b_lon + w32 * b_lat + w33 * b_radial) 
+    lon_geodetic = (w11 * vec_lon + w12 * vec_lat + w13 * vec_radial) 
+    lat_geodetic = (w21 * vec_lon + w22 * vec_lat + w23 * vec_radial) 
+    radial_geodetic = (w31 * vec_lon + w32 * vec_lat + w33 * vec_radial) 
     
     return lon_geodetic, lat_geodetic, radial_geodetic
+
+def geodetic_to_spherical(sph_latitude, geod_latitude, vec_lon, vec_lat, vec_height):
+
+    angle = np.radians(geod_latitude - sph_latitude)
+    cos = np.cos(angle)
+    sin = np.sin(angle)
+
+    w11 = 1
+    w12 = 0
+    w13 = 0
+    
+    w21 = 0
+    w22 = cos
+    w23 = sin
+    
+    w31 = 0
+    w32 = -sin
+    w33 = cos
+    
+    lon_spherical = (w11 * vec_lon + w12 * vec_lat + w13 * vec_height) 
+    lat_spherical = (w21 * vec_lon + w22 * vec_lat + w23 * vec_height) 
+    radial_spherical = (w31 * vec_lon + w32 * vec_lat + w33 * vec_height) 
+    
+    return lon_spherical, lat_spherical, radial_spherical
