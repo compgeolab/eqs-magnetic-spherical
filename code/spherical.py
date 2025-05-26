@@ -54,9 +54,9 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     The function assumes that the magnetic field is modeled by the superposition of dipoles with specified magnetic moments.
     Each dipole is characterized by its position in spherical coordinates (longitude, latitude, radius) and its magnetic moment components.
     """
-    coordinates = bd.check_coordinates(coordinates)
-    dipoles = bd.check_coordinates(dipoles)
-    magnetic_moments = bd.check_coordinates(magnetic_moments)
+    # coordinates = bd.check_coordinates(coordinates)
+    # dipoles = bd.check_coordinates(dipoles)
+    # magnetic_moments = bd.check_coordinates(magnetic_moments)
 
     # Convert to 1D arrays to make it easier to loop over them
     shape = coordinates[0].shape
@@ -91,25 +91,29 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
 
     return b_lon, b_lat, b_radial
 
-def dipole_magnetic_geodetic(geodetic_coordinates, geodetic_dipoles, geodetic_magnetic_moments):
+def dipole_magnetic_geodetic(coordinates, dipoles, magnetic_moments):
     """
-    Calculate the magnetic field of dipoles in geodetic coordinates
+    Calculate the magnetic field of dipoles in GEODETIC coordinates
+
     """
-    geodetic_coordinates = bd.check_coordinates(geodetic_coordinates)
-    geodetic_dipoles = bd.check_coordinates(geodetic_dipoles)
-    geodetic_magnetic_moments = bd.check_coordinates(geodetic_magnetic_moments)
+    coordinates = bd.check_coordinates(coordinates)
+    dipoles = bd.check_coordinates(dipoles)
+    magnetic_moments = bd.check_coordinates(magnetic_moments)
 
-    geodetic_coordinates = tuple(c.ravel() for c in geodetic_coordinates)
-    geodetic_dipoles = tuple(c.ravel() for c in geodetic_dipoles)
-    geodetic_magnetic_moments = tuple(c.ravel() for c in geodetic_magnetic_moments)
+    shape = coordinates[0].shape
 
-    coordinates = bl.WGS84.geodetic_to_spherical(geodetic_coordinates[0], geodetic_coordinates[1], geodetic_coordinates[2])
-    dipoles = bl.WGS84.geodetic_to_spherical(geodetic_dipoles[0], geodetic_dipoles[1], geodetic_dipoles[2])
-    magnetic_moments = geodetic_to_spherical(dipoles[1], geodetic_dipoles[1], geodetic_magnetic_moments[0], geodetic_magnetic_moments[1],geodetic_magnetic_moments[2])
+    sph_coordinates =  bl.WGS84.geodetic_to_spherical(coordinates[0], coordinates[1], coordinates[2])
+    sph_dipoles = bl.WGS84.geodetic_to_spherical(dipoles[0], dipoles[1], dipoles[2])
+    sph_magnetic_moments = geodetic_to_spherical(sph_dipoles[1], dipoles[1], magnetic_moments[0],magnetic_moments[1],magnetic_moments[2])
 
-    b_lon, b_lat, b_radial = dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments)
+    b_lat, b_lon, b_radial = dipole_magnetic_spherical(sph_coordinates,sph_dipoles,sph_magnetic_moments)
 
-    b_lon, b_lat, b_height = spherical_to_geodetic(coordinates[1], geodetic_coordinates[1], b_lat, b_lon, b_radial)
+    b_lon, b_lat, b_height = spherical_to_geodetic(sph_coordinates[1], coordinates[1], b_lat, b_lon, b_radial)
+
+    b_lon = b_lon.reshape(shape)
+    b_lat = b_lat.reshape(shape)
+    b_height = b_height.reshape(shape)
+
 
     return b_lon, b_lat, b_height
 
