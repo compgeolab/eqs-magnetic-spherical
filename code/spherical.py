@@ -1,3 +1,9 @@
+"""
+Implements the forward modeling and equivalent sources
+
+Also includes some utilities for general use.
+"""
+
 import numpy as np
 import harmonica as hm
 import choclo
@@ -5,7 +11,96 @@ import bordado as bd
 import numba
 import boule as bl
 
+
 CM = choclo.constants.VACUUM_MAGNETIC_PERMEABILITY / 4 / np.pi
+
+
+def vector_geodetic_to_spherical(
+    latitude_spherical, latitude, eastward, northward, upward
+):
+    """
+    Rotate a vector from a geodetic to a spherical system.
+    """
+    angle = np.radians(latitude - latitude_spherical)
+    cos = np.cos(angle)
+    sin = np.sin(angle)
+    # Multiply the vector by a rotation matrix around the eastward direction
+    northward_spherical = cos * northward + sin * upward
+    radial = -sin * northward + cos * upward
+    return eastward, northward_spherical, radial
+
+
+def vector_spherical_to_geodetic(
+    latitude_spherical, latitude, eastward, northward, radial
+):
+    """
+    Rotate a vector from a spherical to a geodetic system.
+    """
+    return vector_geodetic_to_spherical(
+        latitude, latitude_spherical, eastward, northward, radial
+    )
+
+
+def dipole_magnetic_geodetic(coordinates, dipoles, magnetic_moments):
+    """
+    Calculate the magnetic field of dipoles in geodetic coordinates.
+
+    Input coordinates are geodetic and the output vector is in
+    a local north-oriented Cartesian frame with the z-axis aligned with the
+    direction normal to the ellipsoid.
+
+    Parameters
+    ----------
+    coordinates : tuple = (longitude, latitude, height)
+        Tuple of arrays containing the longitude, latitude, and height
+        coordinates of the computation points defined on a geodetic coordinate
+        system. Longitude and latitude should be in decimal degrees and height
+        should be in meters. Coordinates can be n-dimensional arrays but all
+        arrays must have the same shape.
+    dipoles: tuple = (longitude, latitude, height)
+        Tuple of arrays containing the longitude, latitude, and height
+        coordinates of the dipoles defined on a geodetic coordinate system.
+        Longitude and latitude should be in decimal degrees and height should
+        be in meters. Coordinates can be n-dimensional arrays but all arrays
+        must have the same shape.
+    magnetic_moments: tuple = (east, north, up)
+        Tuple of arrays containing the magnetic moments of the dipoles, given
+        by three components: longitudinal, latitudinal, and upward. Each
+        component should be an n-dimensional array with the same shape as the
+        dipole coordinates. The vector components are defined on a local
+        north-oriented Cartesian system located at the dipole.
+
+    Returns
+    -------
+    magnetic_field : tuple = (east, north, up)
+        Arrays with the longitudinal, latitudinal, and upward components of the
+        combined B magnetic field of the dipoles in nT.
+
+    """
+    # Convert coordinates and dipole moments to spherical
+    coordinates_sph = bl.WGS84.geodetic_to_spherical(
+        coordinates[0], coordinates[1], coordinates[2]
+    )
+    dipoles_sph = bl.WGS84.geodetic_to_spherical(dipoles[0], dipoles[1], dipoles[2])
+    magnetic_moments_sph = vector_geodetic_to_spherical(
+        latitude_spherical=dipoles_sph[1],
+        latitude=dipoles[1],
+        eastward=magnetic_moments[0],
+        northward=magnetic_moments[1],
+        upward=magnetic_moments[2],
+    )
+    b_lon, b_lat, b_radial = dipole_magnetic_spherical(
+        coordinates_sph, dipoles_sph, magnetic_moments_sph
+    )
+    b_lon, b_lat, b_height = vector_spherical_to_geodetic(
+        latitude_spherical=coordinates_sph[1],
+        latitude=coordinates[1],
+        eastward=b_lon,
+        northward=b_lat,
+        radial=b_radial,
+    )
+    return b_lon, b_lat, b_height
+
 
 def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
     """
@@ -17,57 +112,54 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
 
     Parameters
     ----------
-    coordinates : tuple of arrays
+    coordinates : tuple = (longitude, latitude, radius)
         Tuple of arrays containing the longitude, spherical latitude, and
         radius coordinates of the computation points defined on a geocentric
         spherical coordinate system. Longitude and latitude should be in
         decimal degrees and radius should be in meters. Coordinates can be
         n-dimensional arrays but all arrays must have the same shape.
-    dipoles: tuple of arrays
+    dipoles: tuple = (longitude, latitude, radius)
         Tuple of arrays containing the longitude, spherical latitude, and
         radius coordinates of the dipoles defined on a geocentric spherical
         coordinate system. Longitude and latitude should be in decimal degrees
         and radius should be in meters. Coordinates can be n-dimensional arrays
         but all arrays must have the same shape.
-    magnetic_moments: tuple of arrays
+    magnetic_moments: tuple = (east, north, radial)
         Tuple of arrays containing the magnetic moments of the dipoles, given
         by three components: longitudinal, latitudinal, and radial. Each
         component should be an n-dimensional array with the same shape as the
         dipole coordinates. The vector components are defined on a local
         north-oriented Cartesian system located at the dipole.
 
-    Returns:
-    - B_r (array): Magnetic field component in the radial direction (nT) at each observation point.
-    - B_colat (array): Magnetic field component in the theta direction (nT) at each observation point.
-    - B_lon (array): Magnetic field component in the phi direction (nT) at each observation point.
+    Returns
+    -------
+    magnetic_field : tuple = (east, north, radial)
+        Arrays with the longitudinal, latitudinal, and radial components of the
+        combined B magnetic field of the dipoles in nT.
 
+    Notes
+    -----
     This function:
-    1. Converts latitude and longitude from degrees to radians for spherical coordinate calculations.
-    2. Calculates directional cosines and separation distances between source and observation points.
-    3. Computes intermediate matrices (H_ij) accounting for the geometry and separation between source and observation points.
-    4. Uses the magnetic moments and geometry to compute the magnetic field components in spherical coordinates.
-
-    Notes:
-    - The magnetic field components are returned in nanotesla (nT).
-    - The constant CM (not passed as an argument) is used to scale the magnetic field based on the source-observation geometry.
-
-    The function assumes that the magnetic field is modeled by the superposition of dipoles with specified magnetic moments.
-    Each dipole is characterized by its position in spherical coordinates (longitude, latitude, radius) and its magnetic moment components.
+    1. Converts latitude and longitude from degrees to radians for spherical
+       coordinate calculations.
+    2. Calculates directional cosines and separation distances between source
+       and observation points.
+    3. Computes intermediate matrices (H_ij) accounting for the geometry and
+       separation between source and observation points.
+    4. Uses the magnetic moments and geometry to compute the magnetic field
+       components in spherical coordinates.
     """
-    # coordinates = bd.check_coordinates(coordinates)
-    # dipoles = bd.check_coordinates(dipoles)
-    # magnetic_moments = bd.check_coordinates(magnetic_moments)
-
     # Convert to 1D arrays to make it easier to loop over them
     shape = coordinates[0].shape
     n_data = coordinates[0].size
-    coordinates = tuple(c.ravel() for c in coordinates)
-    dipoles = tuple(c.ravel() for c in dipoles)
-    magnetic_moments = tuple(c.ravel() for c in magnetic_moments)
-
+    coordinates = tuple(np.atleast_1d(c).ravel() for c in coordinates)
+    dipoles = tuple(np.atleast_1d(c).ravel() for c in dipoles)
+    magnetic_moments = tuple(np.atleast_1d(c).ravel() for c in magnetic_moments)
+    # Initialize the output arrays
     b_lon = np.zeros(n_data)
     b_lat = np.zeros(n_data)
     b_radial = np.zeros(n_data)
+    # This function needs the colatitude and all angles in radians
     _dipole_magnetic_spherical_fast(
         np.radians(coordinates[0]),
         np.radians(90 - coordinates[1]),
@@ -76,46 +168,17 @@ def dipole_magnetic_spherical(coordinates, dipoles, magnetic_moments):
         np.radians(90 - dipoles[1]),
         dipoles[2],
         magnetic_moments[0],
-        magnetic_moments[1],
+        -magnetic_moments[1],
         magnetic_moments[2],
         b_lon,
         b_lat,
         b_radial,
     )
-
-    # Rename things back to the original coordinate shapes
+    # Reshape things back to the original coordinate shapes
     b_lon = b_lon.reshape(shape)
     b_lat = b_lat.reshape(shape)
     b_radial = b_radial.reshape(shape)
-
-
     return b_lon, b_lat, b_radial
-
-def dipole_magnetic_geodetic(coordinates, dipoles, magnetic_moments):
-    """
-    Calculate the magnetic field of dipoles in GEODETIC coordinates
-
-    """
-    coordinates = bd.check_coordinates(coordinates)
-    dipoles = bd.check_coordinates(dipoles)
-    magnetic_moments = bd.check_coordinates(magnetic_moments)
-
-    shape = coordinates[0].shape
-
-    sph_coordinates =  bl.WGS84.geodetic_to_spherical(coordinates[0], coordinates[1], coordinates[2])
-    sph_dipoles = bl.WGS84.geodetic_to_spherical(dipoles[0], dipoles[1], dipoles[2])
-    sph_magnetic_moments = geodetic_to_spherical(sph_dipoles[1], dipoles[1], magnetic_moments[0],magnetic_moments[1],magnetic_moments[2])
-
-    b_lat, b_lon, b_radial = dipole_magnetic_spherical(sph_coordinates,sph_dipoles,sph_magnetic_moments)
-
-    b_lon, b_lat, b_height = spherical_to_geodetic(sph_coordinates[1], coordinates[1], b_lat, b_lon, b_radial)
-
-    b_lon = b_lon.reshape(shape)
-    b_lat = b_lat.reshape(shape)
-    b_height = b_height.reshape(shape)
-
-
-    return b_lon, b_lat, b_height
 
 
 @numba.jit(nopython=True, parallel=True)
@@ -263,9 +326,7 @@ def jacobian(
     unit_magnetic_moment = hm.magnetic_angles_to_vec(
         1, inclination_source, declination_souce
     )
-    main_field =  hm.magnetic_angles_to_vec(
-        1, inclination_field, declination_field
-    )
+    main_field = hm.magnetic_angles_to_vec(1, inclination_field, declination_field)
 
     A = np.empty((n_data, n_params))
     _jacobian_fast(
@@ -402,51 +463,3 @@ def profile_points(start, end, npoints, depth=0):
     dike = np.array([longitude]), np.array([latitude]), np.array([depth_array])
 
     return dike
-
-def spherical_to_geodetic(sph_latitude, geod_latitude, vec_lon, vec_lat, vec_radial):
-
-    angle = np.radians(sph_latitude - geod_latitude)
-    cos = np.cos(angle)
-    sin = np.sin(angle)
-
-    w11 = 1
-    w12 = 0
-    w13 = 0
-    
-    w21 = 0
-    w22 = cos
-    w23 = sin
-    
-    w31 = 0
-    w32 = -sin
-    w33 = cos
-    
-    lon_geodetic = (w11 * vec_lon + w12 * vec_lat + w13 * vec_radial) 
-    lat_geodetic = (w21 * vec_lon + w22 * vec_lat + w23 * vec_radial) 
-    radial_geodetic = (w31 * vec_lon + w32 * vec_lat + w33 * vec_radial) 
-    
-    return lon_geodetic, lat_geodetic, radial_geodetic
-
-def geodetic_to_spherical(sph_latitude, geod_latitude, vec_lon, vec_lat, vec_height):
-
-    angle = np.radians(geod_latitude - sph_latitude)
-    cos = np.cos(angle)
-    sin = np.sin(angle)
-
-    w11 = 1
-    w12 = 0
-    w13 = 0
-    
-    w21 = 0
-    w22 = cos
-    w23 = sin
-    
-    w31 = 0
-    w32 = -sin
-    w33 = cos
-    
-    lon_spherical = (w11 * vec_lon + w12 * vec_lat + w13 * vec_height) 
-    lat_spherical = (w21 * vec_lon + w22 * vec_lat + w23 * vec_height) 
-    radial_spherical = (w31 * vec_lon + w32 * vec_lat + w33 * vec_height) 
-    
-    return lon_spherical, lat_spherical, radial_spherical
