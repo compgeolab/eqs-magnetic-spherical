@@ -5,10 +5,12 @@ Also includes some utilities for general use.
 """
 
 import numpy as np
-import harmonica as hm
-import choclo
-import bordado as bd
 import numba
+import choclo
+import verde as vd
+import verde.base
+import harmonica as hm
+import bordado as bd
 import boule as bl
 
 
@@ -16,7 +18,11 @@ CM = choclo.constants.VACUUM_MAGNETIC_PERMEABILITY / 4 / np.pi
 
 
 def vector_geodetic_to_spherical(
-    latitude_spherical, latitude, eastward, northward, upward
+    eastward,
+    northward,
+    upward,
+    latitude_spherical,
+    latitude,
 ):
     """
     Rotate a vector from a geodetic to a spherical system.
@@ -31,13 +37,21 @@ def vector_geodetic_to_spherical(
 
 
 def vector_spherical_to_geodetic(
-    latitude_spherical, latitude, eastward, northward, radial
+    eastward,
+    northward,
+    radial,
+    latitude_spherical,
+    latitude,
 ):
     """
     Rotate a vector from a spherical to a geodetic system.
     """
     return vector_geodetic_to_spherical(
-        latitude, latitude_spherical, eastward, northward, radial
+        eastward,
+        northward,
+        radial,
+        latitude,
+        latitude_spherical,
     )
 
 
@@ -83,21 +97,21 @@ def dipole_magnetic_geodetic(coordinates, dipoles, magnetic_moments):
     )
     dipoles_sph = bl.WGS84.geodetic_to_spherical(dipoles[0], dipoles[1], dipoles[2])
     magnetic_moments_sph = vector_geodetic_to_spherical(
-        latitude_spherical=dipoles_sph[1],
-        latitude=dipoles[1],
         eastward=magnetic_moments[0],
         northward=magnetic_moments[1],
         upward=magnetic_moments[2],
+        latitude_spherical=dipoles_sph[1],
+        latitude=dipoles[1],
     )
     b_lon, b_lat, b_radial = dipole_magnetic_spherical(
         coordinates_sph, dipoles_sph, magnetic_moments_sph
     )
     b_lon, b_lat, b_height = vector_spherical_to_geodetic(
-        latitude_spherical=coordinates_sph[1],
-        latitude=coordinates[1],
         eastward=b_lon,
         northward=b_lat,
         radial=b_radial,
+        latitude_spherical=coordinates_sph[1],
+        latitude=coordinates[1],
     )
     return b_lon, b_lat, b_height
 
@@ -308,44 +322,90 @@ def _kernel(
     return b_lon, b_lat, b_radial
 
 
-def jacobian(
-    coordinates,
-    dipoles,
-    inclination_source,
-    declination_souce,
-    inclination_field,
-    declination_field,
-):
-    coordinates = bd.check_coordinates(coordinates)
-    dipoles = bd.check_coordinates(dipoles)
-    coordinates = tuple(c.ravel() for c in coordinates)
-    dipoles = tuple(c.ravel() for c in dipoles)
-    n_data = coordinates[0].size
-    n_params = dipoles[0].size
+class EquivalentSourcesMagGeod:
 
-    unit_magnetic_moment = hm.magnetic_angles_to_vec(
-        1, inclination_source, declination_souce
-    )
-    main_field = hm.magnetic_angles_to_vec(1, inclination_field, declination_field)
+    def __init__(
+        self,
+        damping=None,
+        depth=0,
+        inclination=90,
+        declination=0,
+        ellipsoid=bl.WGS84,
+        source_coordinates=None,
+    ):
+        self.damping = damping
+        self.depth = depth
+        self.inclination = inclination
+        self.declination = declination
+        self.ellipsoid = ellipsoid
+        self.source_coordinates = source_coordinates
 
-    A = np.empty((n_data, n_params))
-    _jacobian_fast(
-        np.radians(coordinates[0]),
-        np.radians(90 - coordinates[1]),
-        coordinates[2],
-        np.radians(dipoles[0]),
-        np.radians(90 - dipoles[1]),
-        dipoles[2],
-        unit_magnetic_moment[0],
-        unit_magnetic_moment[1],
-        unit_magnetic_moment[2],
-        main_field[0],
-        main_field[1],
-        main_field[2],
-        A,
-    )
+    def fit(self, coordinates, inclination, declination, data, weights=None):
+        """ """
+        coordinates = tuple(np.atleast_1d(c).ravel() for c in coordinates)
+        data = data.ravel()
+        jacobian = self.jacobian(coordinates, inclination, declination)
+        moment_amplitude = verde.base.least_squares(
+            jacobian, data, weights=weights, damping=self.damping
+        )
+        self.dipole_moments_ = hm.magnetic_angles_to_vec(
+            moment_amplitude, self.inclination, self.declination
+        )
+        return self
 
-    return A
+    def jacobian(self, coordinates, inclination, declination):
+        """ """
+        if self.source_coordinates is None:
+            self.source_coordinates_ = (
+                coordinates[0].copy(),
+                coordinates[1].copy(),
+                coordinates[2] - self.depth,
+            )
+        else:
+            self.source_coordinates_ = self.source_coordinates
+        n_data = coordinates[0].size
+        n_params = self.source_coordinates_[0].size
+        coordinates_sph = bl.WGS84.geodetic_to_spherical(*coordinates)
+        source_coordinates_sph = bl.WGS84.geodetic_to_spherical(
+            *self.source_coordinates_
+        )
+        unit_moment = vector_geodetic_to_spherical(
+            *hm.magnetic_angles_to_vec(
+                np.ones(n_params), self.inclination, self.declination
+            ),
+            latitude_spherical=source_coordinates_sph[1],
+            latitude=self.source_coordinates_[1],
+        )
+        main_field = vector_geodetic_to_spherical(
+            *hm.magnetic_angles_to_vec(np.ones(n_data), inclination, declination),
+            latitude_spherical=coordinates_sph[1],
+            latitude=coordinates[1],
+        )
+        jacobian = np.empty((n_data, n_params))
+        _jacobian_fast(
+            longitude=np.radians(coordinates_sph[0]),
+            colatitude=np.radians(90 - coordinates_sph[1]),
+            radius=coordinates_sph[2],
+            longitude_source=np.radians(source_coordinates_sph[0]),
+            colatitude_source=np.radians(90 - source_coordinates_sph[1]),
+            radius_source=source_coordinates_sph[2],
+            moment_east=unit_moment[0],
+            moment_north=unit_moment[1],
+            moment_radial=unit_moment[2],
+            main_field_east=main_field[0],
+            main_field_north=main_field[1],
+            main_field_radial=main_field[2],
+            result=jacobian,
+        )
+        return jacobian
+
+    def predict(self, coordinates):
+        if not hasattr(self, "dipole_moments_"):
+            raise ValueError("Fit the class before predicting.")
+        result = dipole_magnetic_geodetic(
+            coordinates, self.source_coordinates_, self.dipole_moments_
+        )
+        return result
 
 
 @numba.jit(nopython=True, parallel=True)
@@ -353,28 +413,28 @@ def _jacobian_fast(
     longitude,
     colatitude,
     radius,
-    longitude_d,
-    colatitude_d,
-    radius_d,
-    m_lon,
-    m_colat,
-    m_radial,
-    f_lon,
-    f_lat,
-    f_radial,
-    A,
+    longitude_source,
+    colatitude_source,
+    radius_source,
+    moment_east,
+    moment_north,
+    moment_radial,
+    main_field_east,
+    main_field_north,
+    main_field_radial,
+    result,
 ):
-    n_dipoles = longitude_d.size
+    n_dipoles = longitude_source.size
     n_data = longitude.size
     for j in numba.prange(n_dipoles):
-        sin_colat_d = np.sin(colatitude_d[j])
-        cos_colat_d = np.cos(colatitude_d[j])
+        sin_colat_d = np.sin(colatitude_source[j])
+        cos_colat_d = np.cos(colatitude_source[j])
         for i in range(n_data):
             sin_colat = np.sin(colatitude[i])
             cos_colat = np.cos(colatitude[i])
-            sin_lon = np.sin(longitude[i] - longitude_d[j])
-            cos_lon = np.cos(longitude[i] - longitude_d[j])
-            b_lon, b_lat, b_radial = _kernel(
+            sin_lon = np.sin(longitude[i] - longitude_source[j])
+            cos_lon = np.cos(longitude[i] - longitude_source[j])
+            b_east, b_north, b_radial = _kernel(
                 cos_lon,
                 sin_lon,
                 cos_colat,
@@ -382,84 +442,13 @@ def _jacobian_fast(
                 radius[i],
                 cos_colat_d,
                 sin_colat_d,
-                radius_d[j],
-                m_lon,
-                m_colat,
-                m_radial,
+                radius_source[j],
+                moment_east[j],
+                -moment_north[j],
+                moment_radial[j],
             )
-            A[i, j] = f_lon * b_lon + f_lat * b_lat + f_radial * b_radial
-
-
-def calculate_coefficients(observed_data, A, damping):
-
-    I = np.identity(A.shape[1])  # needs to = m x m
-    # np.shape(A) = A.shape
-
-    # The @ operator can be used for cocalculate_total_field_anomaly(grid_coord, observed_source_coord, 0, 0, 1e17, 0, 0)nventional matrix multiplication.
-    system_matrix = A.T @ A + I * damping
-    system_rhs_vector = A.T @ observed_data
-
-    coefficients = np.linalg.solve(system_matrix, system_rhs_vector)
-
-    return coefficients
-
-
-def profile_points(start, end, npoints, depth=0):
-    """
-    Generate evenly spaced coordinates for a profile along a great circle,
-    with a fixed depth value for the entire arc.
-
-    Both start and end should be (longitude, latitude) pairs.
-    The depth parameter sets a constant depth for all points along the profile.
-
-    Returns longitude, latitude, and depth coordinates in a format that can be
-    passed to xarray.Dataset.interp.
-    """
-    lon1, lat1 = np.radians(start)
-    lon2, lat2 = np.radians(end)
-
-    azimuth1 = np.arctan2(
-        np.cos(lat2) * np.sin(lon2 - lon1),
-        np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(lon2 - lon1),
-    )
-
-    azimuth_equator = np.arctan2(
-        np.sin(azimuth1) * np.cos(lat1),
-        np.sqrt(np.cos(azimuth1) ** 2 + np.sin(azimuth1) ** 2 * np.sin(lat1) ** 2),
-    )
-
-    great_circle_equator = np.arctan2(np.tan(lat1), np.cos(azimuth1))
-    lon_equator = lon1 - np.arctan2(
-        np.sin(azimuth_equator) * np.sin(great_circle_equator),
-        np.cos(great_circle_equator),
-    )
-
-    great_circle_distance = 2 * np.arcsin(
-        np.sqrt(
-            np.sin((lat2 - lat1) / 2) ** 2
-            + np.cos(lat1) * np.cos(lat2) * np.sin((lon2 - lon1) / 2) ** 2
-        )
-    )
-
-    distances = np.linspace(start=0, stop=great_circle_distance, num=npoints)
-    distances_equator = distances + great_circle_equator
-
-    latitudes = np.arctan2(
-        np.cos(azimuth_equator) * np.sin(distances_equator),
-        np.sqrt(
-            np.cos(distances_equator) ** 2
-            + (np.sin(azimuth_equator) * np.sin(distances_equator)) ** 2
-        ),
-    )
-
-    longitudes = lon_equator + np.arctan2(
-        np.sin(azimuth_equator) * np.sin(distances_equator), np.cos(distances_equator)
-    )
-
-    longitude = np.degrees(longitudes)
-    latitude = np.degrees(latitudes)
-    depth_array = np.full(npoints, depth)
-
-    dike = np.array([longitude]), np.array([latitude]), np.array([depth_array])
-
-    return dike
+            result[i, j] = (
+                main_field_east[i] * b_east
+                + main_field_north[i] * b_north
+                + main_field_radial[i] * b_radial
+            )
