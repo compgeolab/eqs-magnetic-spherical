@@ -21,8 +21,9 @@ dependencies:
   - numba
   - pygmt
   - gmt
-  - gdal
   - pyproj
+  - rich
+  - ipywidgets
   # Fatiando
   - boule
   - pooch
