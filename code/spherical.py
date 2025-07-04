@@ -497,7 +497,7 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
     """
     Magnetic gradient-boosted equivalent sources in geodetic coordinates.
 
-    Uses a Lambert Azimuthal Equal Area projection to define the windows,
+    Uses a Lambert Cylindrical Equal Area projection to define the windows,
     avoiding issues with convergence of longitude lines towards the poles.
     Window size is specified in meters.
     """
@@ -512,6 +512,7 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
         window_size=None,
         random_seed=None,
         verbose=True,
+        projection=None,
         ellipsoid=bl.WGS84,
     ):
         super().__init__(
@@ -525,13 +526,7 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
         self.window_size = window_size
         self.random_seed = random_seed
         self.verbose = verbose
-
-    @property
-    def projection(self):
-        return pyproj.Proj(
-            f"+proj=laea +a={self.ellipsoid.semimajor_axis} "
-            f"+f={self.ellipsoid.flattening}"
-        )
+        self.projection = projection
 
     def fit(self, coordinates, inclination, declination, data, weights=None):
         """ """
@@ -552,13 +547,21 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
             )
         else:
             self.source_coordinates_ = self.source_coordinates
+        # Define a default projection if on isn't given
+        if self.projection is None:
+            self.projection_ = pyproj.Proj(
+                f"+proj=cea +a={self.ellipsoid.semimajor_axis} "
+                f"+f={self.ellipsoid.flattening}"
+            )
+        else:
+            self.projection_ = self.projection
         n_data = coordinates[0].size
         n_params = self.source_coordinates_[0].size
         # Define a default window size if one is not given
         if self.window_size is None:
             # Try to estimate a window size that would have about 5k data (if
             # data are distributed evenly). 5k fits in most computer RAMs.
-            easting, northing = self.projection(*coordinates[:2])
+            easting, northing = self.projection_(*coordinates[:2])
             region = bd.get_region((easting, northing))
             area = (region[1] - region[0]) * (region[3] - region[2])
             points_per_m2 = n_data / area
@@ -589,20 +592,21 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
         # Create the window indices. Project to an equal area projection so
         # that the window size can be in meters and won't decrease in area
         # towards the poles.
-        coordinates_proj = self.projection(*coordinates[:2])
+        coordinates_proj = self.projection_(*coordinates[:2])
         region_proj = bd.get_region(coordinates_proj)
-        _, data_indices = bd.rolling_window(
+        window_centers_proj, data_indices = bd.rolling_window(
             coordinates_proj,
             self.window_size_,
             overlap=0.5,
             region=region_proj,
         )
         _, source_indices = bd.rolling_window(
-            self.projection(*self.source_coordinates_[:2]),
+            self.projection_(*self.source_coordinates_[:2]),
             self.window_size_,
             overlap=0.5,
             region=region_proj,
         )
+        self.window_centers_ = self.projection_(*window_centers_proj, inverse=True)
         source_indices = source_indices.ravel()
         data_indices = data_indices.ravel()
         # Initialize the solution
