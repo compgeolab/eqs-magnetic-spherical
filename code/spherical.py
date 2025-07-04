@@ -6,6 +6,8 @@ Also includes some utilities for general use.
 
 import numpy as np
 import numba
+import pyproj
+import rich.progress
 import choclo
 import verde as vd
 import verde.base
@@ -322,92 +324,6 @@ def _kernel(
     return b_lon, b_lat, b_radial
 
 
-class EquivalentSourcesMagGeod:
-
-    def __init__(
-        self,
-        damping=None,
-        depth=0,
-        inclination=90,
-        declination=0,
-        ellipsoid=bl.WGS84,
-        source_coordinates=None,
-    ):
-        self.damping = damping
-        self.depth = depth
-        self.inclination = inclination
-        self.declination = declination
-        self.ellipsoid = ellipsoid
-        self.source_coordinates = source_coordinates
-
-    def fit(self, coordinates, inclination, declination, data, weights=None):
-        """ """
-        coordinates = tuple(np.atleast_1d(c).ravel() for c in coordinates)
-        data = data.ravel()
-        jacobian = self.jacobian(coordinates, inclination, declination)
-        moment_amplitude = verde.base.least_squares(
-            jacobian, data, weights=weights, damping=self.damping
-        )
-        self.dipole_moments_ = hm.magnetic_angles_to_vec(
-            moment_amplitude, self.inclination, self.declination
-        )
-        return self
-
-    def jacobian(self, coordinates, inclination, declination):
-        """ """
-        if self.source_coordinates is None:
-            self.source_coordinates_ = (
-                coordinates[0].copy(),
-                coordinates[1].copy(),
-                coordinates[2] - self.depth,
-            )
-        else:
-            self.source_coordinates_ = self.source_coordinates
-        n_data = coordinates[0].size
-        n_params = self.source_coordinates_[0].size
-        coordinates_sph = bl.WGS84.geodetic_to_spherical(*coordinates)
-        source_coordinates_sph = bl.WGS84.geodetic_to_spherical(
-            *self.source_coordinates_
-        )
-        unit_moment = vector_geodetic_to_spherical(
-            *hm.magnetic_angles_to_vec(
-                np.ones(n_params), self.inclination, self.declination
-            ),
-            latitude_spherical=source_coordinates_sph[1],
-            latitude=self.source_coordinates_[1],
-        )
-        main_field = vector_geodetic_to_spherical(
-            *hm.magnetic_angles_to_vec(np.ones(n_data), inclination, declination),
-            latitude_spherical=coordinates_sph[1],
-            latitude=coordinates[1],
-        )
-        jacobian = np.empty((n_data, n_params))
-        _jacobian_fast(
-            longitude=np.radians(coordinates_sph[0]),
-            colatitude=np.radians(90 - coordinates_sph[1]),
-            radius=coordinates_sph[2],
-            longitude_source=np.radians(source_coordinates_sph[0]),
-            colatitude_source=np.radians(90 - source_coordinates_sph[1]),
-            radius_source=source_coordinates_sph[2],
-            moment_east=unit_moment[0],
-            moment_north=unit_moment[1],
-            moment_radial=unit_moment[2],
-            main_field_east=main_field[0],
-            main_field_north=main_field[1],
-            main_field_radial=main_field[2],
-            result=jacobian,
-        )
-        return jacobian
-
-    def predict(self, coordinates):
-        if not hasattr(self, "dipole_moments_"):
-            raise ValueError("Fit the class before predicting.")
-        result = dipole_magnetic_geodetic(
-            coordinates, self.source_coordinates_, self.dipole_moments_
-        )
-        return result
-
-
 @numba.jit(nopython=True, parallel=True)
 def _jacobian_fast(
     longitude,
@@ -452,3 +368,290 @@ def _jacobian_fast(
                 + main_field_north[i] * b_north
                 + main_field_radial[i] * b_radial
             )
+
+
+class EquivalentSourcesMagGeod:
+    """
+    Magnetic equivalent sources in geodetic coordinates.
+    """
+
+    def __init__(
+        self,
+        damping=None,
+        depth=None,
+        inclination=90,
+        declination=0,
+        source_coordinates=None,
+        ellipsoid=bl.WGS84,
+    ):
+        self.damping = damping
+        self.depth = depth
+        self.inclination = inclination
+        self.declination = declination
+        self.source_coordinates = source_coordinates
+        self.ellipsoid = ellipsoid
+
+    def predict(self, coordinates):
+        if not hasattr(self, "dipole_moments_"):
+            raise ValueError("Fit the class before predicting.")
+        result = dipole_magnetic_geodetic(
+            coordinates, self.source_coordinates_, self.dipole_moments_
+        )
+        return result
+
+    def _estimate_depth(self, coordinates):
+        """
+        Estimate a reasonable depth if one isn't given.
+        """
+        N = self.ellipsoid.prime_vertical_radius
+        b = self.ellipsoid.semiminor_axis
+        a = self.ellipsoid.semimajor_axis
+        coslat = np.cos(np.radians(coordinates[1]))
+        sinlat = np.sin(np.radians(coordinates[1]))
+        coordinates_cartesian = (
+            (N + coordinates[2]) * coslat * np.cos(np.radians(coordinates[0])),
+            (N + coordinates[2]) * coslat * np.sin(np.radians(coordinates[0])),
+            (b**2 * N / a**2 + coordinates[2]) * sinlat,
+        )
+        return 5 * bd.neighbor_distance_statistics(
+            coordinates_cartesian, "median", k=10
+        )
+
+    def fit(self, coordinates, inclination, declination, data, weights=None):
+        """ """
+        # Ravel all arrays because the Jacobian calculation needs them ravelled
+        coordinates = tuple(np.atleast_1d(c).ravel() for c in coordinates)
+        data = data.ravel()
+        # Calculate a default depth if needed
+        if self.depth is None:
+            self.depth_ = self._estimate_depth(coordinates)
+        else:
+            self.depth_ = self.depth
+        # If source coordinates aren't given, use the data coordinates
+        if self.source_coordinates is None:
+            self.source_coordinates_ = (
+                coordinates[0].copy(),
+                coordinates[1].copy(),
+                coordinates[2] - self.depth_,
+            )
+        else:
+            self.source_coordinates_ = self.source_coordinates
+        # Convert everything to a spherical coordinate system
+        coordinates_sph = bl.WGS84.geodetic_to_spherical(*coordinates)
+        source_coordinates_sph = bl.WGS84.geodetic_to_spherical(
+            *self.source_coordinates_
+        )
+        n_data = coordinates[0].size
+        n_params = source_coordinates_sph[0].size
+        unit_moment = vector_geodetic_to_spherical(
+            *hm.magnetic_angles_to_vec(
+                np.ones(n_params), self.inclination, self.declination
+            ),
+            latitude_spherical=source_coordinates_sph[1],
+            latitude=self.source_coordinates_[1],
+        )
+        main_field = vector_geodetic_to_spherical(
+            *hm.magnetic_angles_to_vec(np.ones(n_data), inclination, declination),
+            latitude_spherical=coordinates_sph[1],
+            latitude=coordinates[1],
+        )
+        # Solve the inverse problem
+        jacobian = self._jacobian(
+            coordinates_sph, source_coordinates_sph, unit_moment, main_field
+        )
+        moment_amplitude = verde.base.least_squares(
+            jacobian, data, weights=weights, damping=self.damping
+        )
+        # Calculate moment vectors and store them
+        self.dipole_moments_ = hm.magnetic_angles_to_vec(
+            moment_amplitude, self.inclination, self.declination
+        )
+        return self
+
+    def _jacobian(
+        self, coordinates_sph, source_coordinates_sph, unit_moment, main_field
+    ):
+        """ """
+        n_data = coordinates_sph[0].size
+        n_params = source_coordinates_sph[0].size
+        jacobian = np.empty((n_data, n_params))
+        _jacobian_fast(
+            longitude=np.radians(coordinates_sph[0]),
+            colatitude=np.radians(90 - coordinates_sph[1]),
+            radius=coordinates_sph[2],
+            longitude_source=np.radians(source_coordinates_sph[0]),
+            colatitude_source=np.radians(90 - source_coordinates_sph[1]),
+            radius_source=source_coordinates_sph[2],
+            moment_east=unit_moment[0],
+            moment_north=unit_moment[1],
+            moment_radial=unit_moment[2],
+            main_field_east=main_field[0],
+            main_field_north=main_field[1],
+            main_field_radial=main_field[2],
+            result=jacobian,
+        )
+        return jacobian
+
+
+class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
+    """
+    Magnetic gradient-boosted equivalent sources in geodetic coordinates.
+
+    Uses a Lambert Azimuthal Equal Area projection to define the windows,
+    avoiding issues with convergence of longitude lines towards the poles.
+    Window size is specified in meters.
+    """
+
+    def __init__(
+        self,
+        damping=None,
+        depth=None,
+        inclination=90,
+        declination=0,
+        source_coordinates=None,
+        window_size=None,
+        random_seed=None,
+        verbose=True,
+        ellipsoid=bl.WGS84,
+    ):
+        super().__init__(
+            damping=damping,
+            depth=depth,
+            inclination=inclination,
+            declination=declination,
+            source_coordinates=source_coordinates,
+            ellipsoid=ellipsoid,
+        )
+        self.window_size = window_size
+        self.random_seed = random_seed
+        self.verbose = verbose
+
+    @property
+    def projection(self):
+        return pyproj.Proj(
+            f"+proj=laea +a={self.ellipsoid.semimajor_axis} "
+            f"+f={self.ellipsoid.flattening}"
+        )
+
+    def fit(self, coordinates, inclination, declination, data, weights=None):
+        """ """
+        # Ravel all arrays because the Jacobian calculation needs them ravelled
+        coordinates = tuple(np.atleast_1d(c).ravel() for c in coordinates)
+        data = data.ravel()
+        # Calculate a default depth if needed
+        if self.depth is None:
+            self.depth_ = self._estimate_depth(coordinates)
+        else:
+            self.depth_ = self.depth
+        # If source coordinates aren't given, use the data coordinates
+        if self.source_coordinates is None:
+            self.source_coordinates_ = (
+                coordinates[0].copy(),
+                coordinates[1].copy(),
+                coordinates[2] - self.depth_,
+            )
+        else:
+            self.source_coordinates_ = self.source_coordinates
+        n_data = coordinates[0].size
+        n_params = self.source_coordinates_[0].size
+        # Define a default window size if one is not given
+        if self.window_size is None:
+            # Try to estimate a window size that would have about 5k data (if
+            # data are distributed evenly). 5k fits in most computer RAMs.
+            easting, northing = self.projection(*coordinates[:2])
+            region = bd.get_region((easting, northing))
+            area = (region[1] - region[0]) * (region[3] - region[2])
+            points_per_m2 = n_data / area
+            window_area = 5e3 / points_per_m2
+            self.window_size_ = np.sqrt(window_area)
+            min_region_dim = min([region[1] - region[0], region[3] - region[2]])
+            if self.window_size_ > min_region_dim:
+                self.window_size_ = min_region_dim
+        else:
+            self.window_size_ = self.window_size
+        # Convert everything to a spherical coordinate system
+        coordinates_sph = bl.WGS84.geodetic_to_spherical(*coordinates)
+        source_coordinates_sph = bl.WGS84.geodetic_to_spherical(
+            *self.source_coordinates_
+        )
+        unit_moment = vector_geodetic_to_spherical(
+            *hm.magnetic_angles_to_vec(
+                np.ones(n_params), self.inclination, self.declination
+            ),
+            latitude_spherical=source_coordinates_sph[1],
+            latitude=self.source_coordinates_[1],
+        )
+        main_field = vector_geodetic_to_spherical(
+            *hm.magnetic_angles_to_vec(np.ones(n_data), inclination, declination),
+            latitude_spherical=coordinates_sph[1],
+            latitude=coordinates[1],
+        )
+        # Create the window indices. Project to an equal area projection so
+        # that the window size can be in meters and won't decrease in area
+        # towards the poles.
+        coordinates_proj = self.projection(*coordinates[:2])
+        region_proj = bd.get_region(coordinates_proj)
+        _, data_indices = bd.rolling_window(
+            coordinates_proj,
+            self.window_size_,
+            overlap=0.5,
+            region=region_proj,
+        )
+        _, source_indices = bd.rolling_window(
+            self.projection(*self.source_coordinates_[:2]),
+            self.window_size_,
+            overlap=0.5,
+            region=region_proj,
+        )
+        source_indices = source_indices.ravel()
+        data_indices = data_indices.ravel()
+        # Initialize the solution
+        self.residuals_ = data.copy()
+        moment_amplitude = np.zeros(n_params)
+        # Gradient-boosting iterations
+        window_indices = list(range(data_indices.size))
+        np.random.default_rng(self.random_seed).shuffle(window_indices)
+        if self.verbose:
+            window_indices = rich.progress.track(window_indices)
+        for i in window_indices:
+            # Skip windows with no data in them
+            if data_indices[i][0].size == 0:
+                continue
+            # Select data and sources inside the window
+            coordinates_window = tuple(c[data_indices[i]] for c in coordinates_sph)
+            main_field_window = tuple(c[data_indices[i]] for c in main_field)
+            if weights is not None:
+                weights_window = tuple(c[data_indices[i]] for c in weights)
+            else:
+                weights_window = None
+            source_coordinates_window = tuple(
+                c[source_indices[i]] for c in source_coordinates_sph
+            )
+            unit_moment_window = tuple(c[source_indices[i]] for c in unit_moment)
+            # Solve the inverse problem
+            jacobian = self._jacobian(
+                coordinates_window,
+                source_coordinates_window,
+                unit_moment_window,
+                main_field_window,
+            )
+            moment_amplitude_window = verde.base.least_squares(
+                jacobian,
+                self.residuals_[data_indices[i]],
+                weights=weights_window,
+                damping=self.damping,
+            )
+            moment_amplitude[source_indices[i]] += moment_amplitude_window
+            # Use the unit vectors to avoid geodetic to spherical conversions
+            dipole_moment_window = tuple(
+                c * moment_amplitude_window for c in unit_moment_window
+            )
+            predicted_field = dipole_magnetic_spherical(
+                coordinates_sph, source_coordinates_window, dipole_moment_window
+            )
+            self.residuals_ -= sum(f * b for f, b in zip(main_field, predicted_field))
+        # Calculate moment vectors and store them
+        self.dipole_moments_ = hm.magnetic_angles_to_vec(
+            moment_amplitude, self.inclination, self.declination
+        )
+        return self
