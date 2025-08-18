@@ -22,7 +22,6 @@ dependencies:
   - pygmt
   - gmt
   - pyproj
-  - geopandas
   - rich
   - ipywidgets
   # Fatiando
