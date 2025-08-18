@@ -1,4 +1,4 @@
 .ipynb_checkpoints
 __pycache__
 paper/preprint.pdf
-parana-basin-magnetic-processed.csv
+data/parana-basin-magnetic-processed.csv
