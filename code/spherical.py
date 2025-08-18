@@ -403,11 +403,12 @@ class EquivalentSourcesMagGeod:
         """
         Estimate a reasonable depth if one isn't given.
         """
-        N = self.ellipsoid.prime_vertical_radius
-        b = self.ellipsoid.semiminor_axis
-        a = self.ellipsoid.semimajor_axis
+
         coslat = np.cos(np.radians(coordinates[1]))
         sinlat = np.sin(np.radians(coordinates[1]))
+        N = self.ellipsoid.prime_vertical_radius(sinlat)
+        b = self.ellipsoid.semiminor_axis
+        a = self.ellipsoid.semimajor_axis
         coordinates_cartesian = (
             (N + coordinates[2]) * coslat * np.cos(np.radians(coordinates[0])),
             (N + coordinates[2]) * coslat * np.sin(np.radians(coordinates[0])),
