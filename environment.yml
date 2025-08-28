@@ -4,7 +4,7 @@ channels:
   - defaults
 dependencies:
   # Should be on every project
-  - python==3.13.*
+  - python==3.12.*
   - pip
   - numpy
   - scipy
@@ -16,11 +16,12 @@ dependencies:
   - tectonic
   # Project specific dependencies
   - pandas
+  - geopandas
   - xarray
   - netcdf4
   - numba
   - pygmt
-  - gmt
+  - gmt==6.4.*
   - pyproj
   - rich
   - ipywidgets
