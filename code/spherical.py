@@ -513,8 +513,6 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
         window_size=None,
         random_seed=None,
         verbose=True,
-        projection=None,
-        ellipsoid=bl.WGS84,
     ):
         super().__init__(
             damping=damping,
@@ -522,12 +520,10 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
             inclination=inclination,
             declination=declination,
             source_coordinates=source_coordinates,
-            ellipsoid=ellipsoid,
         )
         self.window_size = window_size
         self.random_seed = random_seed
         self.verbose = verbose
-        self.projection = projection
 
     def fit(self, coordinates, inclination, declination, data, weights=None):
         """ """
@@ -548,27 +544,20 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
             )
         else:
             self.source_coordinates_ = self.source_coordinates
-        # Define a default projection if on isn't given
-        if self.projection is None:
-            self.projection_ = pyproj.Proj(
-                f"+proj=cea +a={self.ellipsoid.semimajor_axis} "
-                f"+f={self.ellipsoid.flattening}"
-            )
-        else:
-            self.projection_ = self.projection
         n_data = coordinates[0].size
         n_params = self.source_coordinates_[0].size
         # Define a default window size if one is not given
         if self.window_size is None:
-            # Try to estimate a window size that would have about 5k data (if
-            # data are distributed evenly). 5k fits in most computer RAMs.
-            easting, northing = self.projection_(*coordinates[:2])
-            region = bd.get_region((easting, northing))
-            area = (region[1] - region[0]) * (region[3] - region[2])
-            points_per_m2 = n_data / area
-            window_area = 5e3 / points_per_m2
+            # Estimate a latitude window size (in degrees) so each window has ~5k points
+            region = bd.get_region(coordinates[:2])
+            area = (region[1] - region[0]) * (region[3] - region[2])  # degrees²
+            points_per_deg2 = n_data / area
+            window_area = 5e3 / points_per_deg2
             self.window_size_ = np.sqrt(window_area)
-            min_region_dim = min([region[1] - region[0], region[3] - region[2]])
+            min_region_dim = min([
+                coordinates[1].max() - coordinates[1].min(),  # latitude extent
+                coordinates[0].max() - coordinates[0].min(),  # longitude extent
+            ])
             if self.window_size_ > min_region_dim:
                 self.window_size_ = min_region_dim
         else:
@@ -590,24 +579,21 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
             latitude_spherical=coordinates_sph[1],
             latitude=coordinates[1],
         )
-        # Create the window indices. Project to an equal area projection so
-        # that the window size can be in meters and won't decrease in area
-        # towards the poles.
-        coordinates_proj = self.projection_(*coordinates[:2])
-        region_proj = bd.get_region(coordinates_proj)
-        window_centers_proj, data_indices = bd.rolling_window(
-            coordinates_proj,
+        # Create the window indices directly on the sphere
+        region_geo = bd.get_region(coordinates[:2])
+        window_centers_geo, data_indices = bd.rolling_window_spherical(
+            coordinates[:2],
             self.window_size_,
             overlap=0.5,
-            region=region_proj,
+            region=region_geo,
         )
-        _, source_indices = bd.rolling_window(
-            self.projection_(*self.source_coordinates_[:2]),
+        _, source_indices = bd.rolling_window_spherical(
+            self.source_coordinates_[:2],
             self.window_size_,
             overlap=0.5,
-            region=region_proj,
+            region=region_geo,
         )
-        self.window_centers_ = self.projection_(*window_centers_proj, inverse=True)
+        self.window_centers_ = window_centers_geo
         source_indices = source_indices.ravel()
         data_indices = data_indices.ravel()
         # Initialize the solution
