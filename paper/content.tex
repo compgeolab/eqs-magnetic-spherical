@@ -15,8 +15,6 @@ To address these issues, this study aims to develop and evaluate a spherical equ
 Finally, we validate the method using real airborne datasets, demonstrating its applicability to complex geological scenarios, and integrate the implementation into open-source platforms such as Harmonica and Choclo, supporting broader adoption in the geophysical community. A regular grid for regional data integration is also constructed to support visualization and future comparative analyses.
 
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Methodology}
 \subsection{Magnetic field of a dipole in spherical coordinates}
@@ -135,21 +133,21 @@ Usually, most publicly available airborne magnetic data are provided in the geod
 To facilitate the workflow for the user, we automatically apply all necessary corrections 
 (Figure~\ref{fig_coordinate_systems}b). 
 To rotate the magnetic field vector between the geodetic and spherical coordinate systems, 
-we perform a rotation around the eastward axis by the angle
-$$
-\Delta\Phi= \varphi - \phi
-$$
-where $\varphi$ is the geodetic latitude and $\phi$ is the spherical latitude.
+we perform a rotation around the eastward axis by the difference between $\varphi$, the geodetic latitude, and $\phi$,the spherical latitude.
+
+\begin{equation}
+\Delta\Phi= \varphi - \phi.
+\end{equation}
 
 For a vector with components $(E, N, U)$ in the geodetic system, the transformation 
 to spherical coordinates $(E', N', R')$ is given by:
-$$
+\begin{equation}
 \begin{aligned}
         E' &= E, \\
     N' &= \cos(\Delta\Phi)\, N + \sin(\Delta\Phi)\, U, \\
     R' &= -\sin(\Delta\Phi)\, N + \cos(\Delta\Phi)\, U.
 \end{aligned}
-$$
+\end{equation}
 
 
 The inverse transformation (spherical to geodetic) is obtained by changing the sign 
@@ -169,24 +167,24 @@ where $a_{ij}$ is the total-field anomaly at the $i$-th observation point genera
 
 In matrix notation, the forward problem is written as:
 
-\begin{equation}
-\textcolor{orange}{\begin{bmatrix}
-    d_1 \\ d_2 \\ \vdots \\ d_N
-\end{bmatrix}_{Nx1}} = \begin{bmatrix}
-    \vecbf{b}_{11} \cdot \uvec{F} & \vecbf{b}_{12} \cdot \uvec{F} & \cdots & \vecbf{b}_{1M} \cdot \uvec{F} \\
-    \vecbf{b}_{21} \cdot \uvec{F} & \vecbf{b}_{22} \cdot \uvec{F} & \cdots & \vecbf{b}_{2M} \cdot \uvec{F} \\
-    \vdots & \vdots & \vdots & \vdots \\
-    \vecbf{b}_{N1} \cdot \uvec{F} & \vecbf{b}_{N2} \cdot \uvec{F} & \cdots & \vecbf{b}_{NM} \cdot \uvec{F} \\
-\end{bmatrix}_{NxM} \textcolor{teal}{\begin{bmatrix}
-    m_1 \\ m_2 \\ \vdots \\ m_j
-\end{bmatrix}_{Mx1}} \ ,
-\end{equation}
+% \begin{equation}
+% \textcolor{orange}{\begin{bmatrix}
+%     d_1 \\ d_2 \\ \vdots \\ d_N
+% \end{bmatrix}_{Nx1}} = \begin{bmatrix}
+%     \vecbf{b}_{11} \cdot \uvec{F} & \vecbf{b}_{12} \cdot \uvec{F} & \cdots & \vecbf{b}_{1M} \cdot \uvec{F} \\
+%     \vecbf{b}_{21} \cdot \uvec{F} & \vecbf{b}_{22} \cdot \uvec{F} & \cdots & \vecbf{b}_{2M} \cdot \uvec{F} \\
+%     \vdots & \vdots & \vdots & \vdots \\
+%     \vecbf{b}_{N1} \cdot \uvec{F} & \vecbf{b}_{N2} \cdot \uvec{F} & \cdots & \vecbf{b}_{NM} \cdot \uvec{F} \\
+% \end{bmatrix}_{NxM} \textcolor{teal}{\begin{bmatrix}
+%     m_1 \\ m_2 \\ \vdots \\ m_j
+% \end{bmatrix}_{Mx1}} \ ,
+% \end{equation}
 
-\begin{equation}
-    \textcolor{orange}{\bvec{d}} = \mat{A} \textcolor{teal}{\bvec{c}}
-    \ ,
-    \label{eq:forward-matrices}
-\end{equation}
+% \begin{equation}
+%     \textcolor{orange}{\bvec{d}} = \mat{A} \textcolor{teal}{\bvec{c}}
+%     \ ,
+%     \label{eq:forward-matrices}
+% \end{equation}
 
 where $\mathbf{A}$ is the sensitivity (Jacobian) matrix containing the geometric factors and dipole orientation terms, $\mathbf{c}$ is the vector of source moments, and $\mathbf{d}$ is the predicted data.
 
@@ -228,17 +226,18 @@ Then, for each window $k$, the following steps are repeated:
 A damping factor can be included in each local inversion to improve stability and avoid overfitting. The order in which windows are processed is randomized at each iteration to reduce spatial artifacts. Because each local solution contributes linearly to the predicted data, the final prediction can be evaluated efficiently using the full set of source coefficients.
 
 This strategy enables efficient inversion of millions of data points without requiring excessive memory or computational resources.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
 
-%\begin{figure}[tb]
-%\centering
-%\includegraphics[width=1\linewidth]{figures/simple-synthetic-data.png}
-%\caption{
-  %\lipsum[1]
-%}
-%\label{fig_synthetic_simple_data}
-%\end{figure}
+% \begin{figure}[tb]
+% \centering
+% \includegraphics[width=1\linewidth]{figures/grided-TFA-B.jpeg}
+% \caption{
+%   \lipsum[1]
+% }
+% \label{fig_synthetic_simple_data}
+% \end{figure}
 
 \lipsum[5-10]
 
