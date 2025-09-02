@@ -511,6 +511,7 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
         declination=0,
         source_coordinates=None,
         window_size=None,
+        n_points_per_window=5e3,
         random_seed=None,
         verbose=True,
     ):
@@ -522,6 +523,7 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
             source_coordinates=source_coordinates,
         )
         self.window_size = window_size
+        self.n_points_per_window = n_points_per_window
         self.random_seed = random_seed
         self.verbose = verbose
 
@@ -550,18 +552,24 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
         if self.window_size is None:
             # Estimate a latitude window size (in degrees) so each window has ~5k points
             region = bd.get_region(coordinates[:2])
-            area = (region[1] - region[0]) * (region[3] - region[2])  # degrees²
-            points_per_deg2 = n_data / area
-            window_area = 5e3 / points_per_deg2
-            self.window_size_ = np.sqrt(window_area)
+            dlon = np.radians(region[1] - region[0])
+            R = 6371.0
+            area = (R**2) * dlon * (np.sin(np.radians(region[3])) - np.sin(np.radians(region[2])))
+            points_per_km2 = n_data / area
+            window_area = self.n_points_per_window / points_per_km2
+            window_size_km = np.sqrt(window_area)
+            # Convert the window size back to degrees
+            self.window_size_ = np.degrees(window_size_km / R)
             min_region_dim = min([
                 coordinates[1].max() - coordinates[1].min(),  # latitude extent
                 coordinates[0].max() - coordinates[0].min(),  # longitude extent
             ])
+
             if self.window_size_ > min_region_dim:
                 self.window_size_ = min_region_dim
         else:
             self.window_size_ = self.window_size
+
         # Convert everything to a spherical coordinate system
         coordinates_sph = bl.WGS84.geodetic_to_spherical(*coordinates)
         source_coordinates_sph = bl.WGS84.geodetic_to_spherical(
