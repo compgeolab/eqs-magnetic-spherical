@@ -6,7 +6,6 @@ Also includes some utilities for general use.
 
 import numpy as np
 import numba
-import pyproj
 import rich.progress
 import choclo
 import verde as vd
@@ -548,25 +547,41 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
             self.source_coordinates_ = self.source_coordinates
         n_data = coordinates[0].size
         n_params = self.source_coordinates_[0].size
-        # Define a default window size if one is not given
+        
         if self.window_size is None:
-            # Estimate a latitude window size (in degrees) so each window has ~5k points
-            region = bd.get_region(coordinates[:2])
-            dlon = np.radians(region[1] - region[0])
-            R = 6371.0
-            area = (R**2) * dlon * (np.sin(np.radians(region[3])) - np.sin(np.radians(region[2])))
-            points_per_km2 = n_data / area
-            window_area = self.n_points_per_window / points_per_km2
-            window_size_km = np.sqrt(window_area)
-            # Convert the window size back to degrees
-            self.window_size_ = np.degrees(window_size_km / R)
+            # Use the total extent of the region as the initial window size
             min_region_dim = min([
                 coordinates[1].max() - coordinates[1].min(),  # latitude extent
                 coordinates[0].max() - coordinates[0].min(),  # longitude extent
             ])
 
-            if self.window_size_ > min_region_dim:
-                self.window_size_ = min_region_dim
+            self.window_size_ = 0.5 * min_region_dim
+
+            # Loop to decrease the window size by 50% until the point limit is reached
+            for i in range(1000):
+                # Create the test window and count the points
+                region_geo = bd.get_region(coordinates[:2])
+                _, data_indices = bd.rolling_window_spherical(
+                    coordinates[:2],
+                    self.window_size_,
+                    overlap=0.5,
+                    region=region_geo,
+                )
+                
+                # Since windows can have different densities, get the number of points
+                # from the largest window to ensure the limit is not exceeded
+                points_in_window = 0
+                if data_indices.size > 0:
+                    points_in_window = np.max([len(arr) for arr in data_indices])
+
+                if points_in_window <= self.n_points_per_window:
+                    # The window size is acceptable, exit the loop
+                    break
+                else:
+                    # The window is too large, reduce the size by 30%
+                    self.window_size_ *= 0.3
+            else: 
+                raise ValueError("Couldn't find the best window value")
         else:
             self.window_size_ = self.window_size
 
@@ -588,20 +603,20 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
             latitude=coordinates[1],
         )
         # Create the window indices directly on the sphere
-        region_geo = bd.get_region(coordinates[:2])
-        window_centers_geo, data_indices = bd.rolling_window_spherical(
+        region = bd.get_region(coordinates[:2])
+        window_centers_, data_indices = bd.rolling_window_spherical(
             coordinates[:2],
             self.window_size_,
             overlap=0.5,
-            region=region_geo,
+            region=region,
         )
         _, source_indices = bd.rolling_window_spherical(
             self.source_coordinates_[:2],
             self.window_size_,
             overlap=0.5,
-            region=region_geo,
+            region=region,
         )
-        self.window_centers_ = window_centers_geo
+        self.window_centers_ = window_centers_
         source_indices = source_indices.ravel()
         data_indices = data_indices.ravel()
         # Initialize the solution
