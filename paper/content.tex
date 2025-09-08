@@ -1,231 +1,280 @@
-\section*{Introduction}
+\section{Introduction}
 
-The analysis of magnetic field data is a key component in geophysical investigations, offering valuable information about subsurface structures and geological variations \citep{Blakely1988}. Among the techniques available for processing such data, the equivalent source method is particularly useful. Based on principles from potential theory, this method takes advantage of the inherent non-uniqueness of potential fields by replacing observed anomalies with synthetic responses from a set of hypothetical sources. These sources are used to perform common geophysical operations such as upward and downward continuation, gridding, and reduction to the pole \citep{Dampney1969}.
+The equivalent source technique is a powerful and widely used method for processing potential-field data, providing crucial insights into subsurface structures and geological variations by allowing for robust interpolation and transformation of scattered measurements \citep{Blakely1988}. Grounded in potential theory, the method approximates observed anomalies using a layer of hypothetical sources. Once the physical properties of these sources are estimated, they can be used to compute derived quantities at any location, such as upward and downward continuation, data gridding, and reduction to the pole \citep{Dampney1969}. Consequently, this technique has become a cornerstone in various geophysical applications, ranging from local mineral exploration to regional geological mapping \citep{Emilia1973, Mendonca1994, Mendonca1995, Gusp2009, Li2006, Li2020, ZhiWen2022}.
 
-This approach typically relies on a distribution of virtual sources located below the observation surface to improve numerical stability. However, its application to large-scale datasets, such as those acquired in airborne surveys,can be computationally demanding due to the high volume of data. \citet{OliveiraJunior2023} discuss this limitation and review several strategies designed to reduce computational cost. These include Column- and Row-action updates, sparsity regularization, iterative and direct deconvolution, and the Moving Window technique introduced by \citet{leao1989} and further developed by \citet{soler2021}.
+Although effective, the practical application of the equivalent source technique faces a bottleneck: its high computational cost. Modern airborne surveys generate massive volumes of data, leading to the formulation of large and dense linear systems that are demanding in terms of both processing time and computer memory \citep{OliveiraJunior2023}. To address this challenge, a variety of strategies have been developed to improve computational efficiency. These include methods based on moving data windows \citep{Leao1989}, sparsity-inducing transformations using wavelets \citep{Li2010}, and gradient-boosting algorithms \citep{Soler2021}.
 
-In this work, we extend the equivalent source method to spherical coordinates and incorporate a gradient-boosting strategy of \citet{soler2021} also using the dual-layer method of \citet{Uppal2025} to fit booth higher- and lower-wavelength. This combination is intended to improve the efficiency and scalability of modeling magnetic data over regional to continental areas, where the curvature of the Earth must be taken into account. The method includes a windowed inversion framework with iterative refinement, adapted to the geometry of the sphere.
+For geophysical studies spanning regional to continental scales, this reliance on a Cartesian framework introduces a second, more fundamental limitation: geometric distortion. As the survey area increases, the Earth's curvature becomes non-negligible, and projecting data onto a flat grid leads to significant inaccuracies in area and shape. Consequently, spherical formulations are geometrically more appropriate for large-scale modeling. The use of equivalent sources in spherical coordinates was proposed early on \citet{VonFrese1981} and has been successfully applied in global anomaly and satellite-based studies \citep{Langel1998, Kother2015}. This shift has motivated the development of specialized forward modeling tools, such as those based on tesseroids (spherical prisms), to accurately compute the gravitational and magnetic fields in a spherical setting \citep{Uieda2016, Baykiev2016,Uieda2017, Soler2019, Zhao2019, Yuan2025}.
 
-Equivalent source methods have traditionally been applied to problems at local and regional scales, particularly in geological mapping and mineral exploration \citep{Emilia1973, Mendonca1994, Mendonca1995, Gusp2009, Li2006, Li2020, ZhiWen2022}. However, the increasing availability of large-scale geophysical datasets and the growing interest in regional to global studies have highlighted the limitations of Cartesian formulations in these contexts. As the scale of analysis increases, the curvature of the Earth can no longer be neglected, and methods formulated in spherical coordinates become more appropriate \citep{VonFrese1981}. Despite the continued use of Cartesian-based approaches, largely due to their simpler implementation and well-established computational infrastructure \citep{Li2010, Siqueira2017, Jirigalatu2019, soler2021, takahashi2022},they tend to introduce geometric distortions over large areas, reducing the reliability of the results in spherical domains.
+Adopting a spherical geometry, however, presents new challenges for implementing window-based computational strategies like gradient-boosting. A prerequisite for such methods is the effective subdivision of the spherical surface into discrete, manageable cells for localized processing. Methods for tessellating a sphere into equal-area cells are essential for this task, as they ensure that each window contributes equally to the inversion, avoiding biases from uneven cell sizes. Several approaches exist for this purpose, including those based on Lambert projections or hierarchical structures like  \citep{Gorski1998}. A simpler and more direct alternative is the isolatitudinal method proposed by \citet{Malkin2016}, which divides the sphere into latitudinal bands that are then subdivided into equal-area cells. This approach provides a straightforward way to define the processing windows required for our gradient-boosting algorithm in a spherical context.
 
-Spherical approaches, in contrast, are more appropriate for large-scale modeling and have been successfully used in global anomaly studies and satellite data analysis \citep{Langel1998, Kother2015}. Nonetheless, extending the equivalent source technique to a spherical geometry introduces additional mathematical and computational challenges. These include reformulating the sensitivity matrix, adapting inversion algorithms, and ensuring numerical stability in the presence of noise and uneven data coverage.
+This work introduces a unified framework that simultaneously addresses both the computational and geometric challenges inherent in large-scale magnetic data processing. We develop and implement a spherical equivalent source technique that integrates recent computational advancements to ensure both efficiency and geometric fidelity. Specifically, our approach extends gradient-boosting strategies \citep{Soler2021} and dual-layer source configurations \citep{Uppal2025} into a windowed inversion framework adapted for the Earth's spherical geometry. In line with the FAIR Guiding Principles for scientific data and software \citep{Wilkinson2016}, our implementation is made available as open-source software.
 
-To address these issues, this study aims to develop and evaluate a spherical equivalent source method enhanced with gradient-boosting techniques. We begin by testing the method with synthetic data to assess its accuracy and numerical performance. We then analyze its behavior under conditions such as varying noise levels and non-uniform spatial sampling. The gradient-boosting algorithm is adapted to the spherical setting to ensure convergence and efficiency. Finally, we apply the method to real airborne datasets to demonstrate its practical utility and potential for integration into open-source geophysical software.
-
-Finally, we validate the method using real airborne datasets, demonstrating its applicability to complex geological scenarios, and integrate the implementation into open-source platforms such as Harmonica and Choclo, supporting broader adoption in the geophysical community. A regular grid for regional data integration is also constructed to support visualization and future comparative analyses.
-
-
+The main contributions of this work are:
+\begin{itemize}
+    \item Development of a spherical equivalent source framework that addresses both computational and geometric challenges in large-scale magnetic data processing.
+    \item Integration of gradient-boosting techniques into this spherical framework to ensure computational efficiency \citep{Soler2021}.
+    \item Adaptation of dual-layer source configurations within the spherical model to robustly handle both short- and long-wavelength components of the magnetic field \citep{Uppal2025}.
+    \item Implementation of a windowed inversion process specifically designed for the Earth's spherical geometry, utilizing an equal-area tessellation scheme for window definition \citep{Malkin2016}.
+    \item Rigorous validation of the method's accuracy, convergence, and performance using synthetic datasets.
+    \item Demonstration of the method's practical applicability by processing a real-world airborne magnetic dataset.
+    \item Integration of the complete implementation into the open-source geophysical software ecosystem \citep{Uieda2013}, providing a scalable and accessible tool for the scientific community.
+\end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Methodology}
+
 \subsection{Magnetic field of a dipole in spherical coordinates}
 
-Magnetic field calculations in spherical coordinates are fundamental to geophysical applications such as Earth's magnetic field modeling, mineral exploration, and analysis of airborne magnetometric surveys. These applications demand mathematical descriptions that take into account Earth's curvature, especially at regional to global scales. The spherical coordinate system provides a natural framework for such modeling by aligning with the geometry of the planet.
+The accurate calculation of magnetic fields in spherical coordinates is fundamental for modeling geophysical data at regional to global scales, where the Earth's curvature is non-negligible. This section details the mathematical framework for computing the magnetic field vector $\mathbf{B}$ at an observation point $P(r, \theta, \lambda)$ generated by a magnetic dipole source located at point $Q(r', \theta', \lambda')$, characterized by its magnetic moment vector $\mathbf{m}'$. The formulation is based on the classical works of \citet{VonFrese1981} and \citet{Langel1998} and is essential for forward modeling techniques in spherical coordinates, such as those using tesseroids \citep{Uieda2016}.
 
-The mathematical formulation for calculating the magnetic field generated by dipole sources in spherical coordinates is well-established in classical works by \citet{VonFrese1981} and \citet{Langel1998}. These studies present comprehensive derivations of the magnetic field components and transformation matrices necessary for practical implementations.
-
-In spherical coordinates, the local orthonormal basis vectors depend on three variables: the radial distance $r$, the colatitude $\theta$ (measured from the positive z-axis), and the longitude $\lambda$ (measured in the x-y plane) (see Figure~\ref{fig_coordinate_systems} a)). These unit vectors, $\hat{\mathbf{r}}$, $\hat{\boldsymbol{\theta}}$, and $\hat{\boldsymbol{\lambda}}$, are essential to describe both the positions of sources and observation points, as well as the directions of vector quantities such as the magnetic field and magnetic moment.
+A key challenge in spherical coordinates is that the local orthonormal basis vectors ($\hat{\mathbf{r}}$, $\hat{\boldsymbol{\theta}}$, $\hat{\boldsymbol{\lambda}}$) are position-dependent (see Figure~\ref{fig_coordinate_systems}a). Consequently, the magnetic moment vector $\mathbf{m}'$, defined in the local basis at the source point $Q$, and the magnetic field vector $\mathbf{B}$, measured in the local basis at the observation point $P$, reside in different reference frames. To relate these two vectors, the source's magnetic moment must first be rotated into the observer's local coordinate system.
 
 \begin{figure}[htb]
-\centering
-\includegraphics[width=1\linewidth]{figures/diagram-final.png}
-\caption{Geometric configuration of the magnetic dipole field calculation. 
-    \textbf{(a)} Spherical coordinate system centered at the origin, with the equivalent magnetic dipole located at point $Q$, characterized by its magnetic moment vector $\vec{\mathbf{m'}}$ (blue). The magnetic field $\vec{\mathbf{B}}$ (red) is evaluated at point $P$, and both locations have their respective local reference frames defined by the spherical basis vectors $\hat{\mathbf{r}}, \hat{\boldsymbol{\theta}}, \hat{\boldsymbol{\lambda}})$. 
-    \textbf{(b)} Geodetic coordinate system illustrating the curvature of the Earth and the angular separation between source and observation points, denoted by spherical and geodetic longitudes $\phi$ and $\varphi$. The difference $\varphi - \phi$ accounts for the azimuthal angle between the two coordinate systems.}
-\label{fig_coordinate_systems}
+    \centering
+    \includegraphics[width=1\linewidth]{figures/diagram-final.png}
+    \caption{Geometric configuration of the magnetic dipole field calculation. 
+        \textbf{(a)} Spherical coordinate system centered at the origin, with the equivalent magnetic dipole located at point $Q$, characterized by its magnetic moment vector $\mathbf{m}'$ (blue). The magnetic field $\mathbf{B}$ (red) is evaluated at point $P$. Both locations have their respective local reference frames defined by the spherical basis vectors ($\hat{\mathbf{r}}, \hat{\boldsymbol{\theta}}, \hat{\boldsymbol{\lambda}}$). 
+        \textbf{(b)} Geodetic coordinate system illustrating the relationship between geodetic latitude $\varphi$ and spherical (geocentric) latitude $\phi$, which defines the rotation angle $\Delta\Phi$ needed for coordinate conversion.}
+    \label{fig_coordinate_systems}
 \end{figure}
 
-Expressing the magnetic field vector in the Cartesian coordinate system, we write
+This transformation is achieved through a rotation matrix, $\mathbf{R}$, which maps the components of the source moment from the basis at $Q$ to the basis at $P$. The rotated magnetic moment, $\mathbf{m}$, is given by:
 \begin{equation}
-   \vec{\mathbf{B}} = B_x \, \hat{\mathbf{x}} + B_y \, \hat{\mathbf{y}} + B_z \, \hat{\mathbf{z}},
+    \mathbf{m} = \mathbf{R}\mathbf{m'}.
 \end{equation}
-which is often convenient for numerical computations and for relating with global coordinate references. Similarly, the magnetic moment of the source dipole is described in a Cartesian basis:
+The rotation matrix $\mathbf{R}$ is composed of the direction cosines between the unit vectors of the two local spherical bases:
 \begin{equation}
-   \vec{\mathbf{m'}} = m'_x \, \hat{\mathbf{x}'} + m'_y \, \hat{\mathbf{y}'} + m'_z \, \hat{\mathbf{z}'}.
-\end{equation}
-
-However, because both the observation and source points are located on or above a spherical Earth surface, it is more appropriate to express the magnetic moment and the magnetic field in the local spherical basis at each point. The transformation between Cartesian and spherical representations involves rotation matrices composed of direction cosines.
-
-The magnetic field vector can be expressed as a linear transformation of the source magnetic moment via the relation
-\begin{equation}
-   \vec{\mathbf{B}} = \frac{\mu_0}{4\pi}
-   \mathbf{\bar{\bar{H}}} \mathbf{\bar{\bar{R}}}  \vec{\mathbf{m'}}.
-\end{equation}
-Here, the matrix $\mathbf{\bar{\bar{R}}}$ rotates the source moment vector $\mathbf{\vec{\mathbf{m'}}}$ from the source's local coordinate system to the observation point's local frame:
-\begin{equation}
-   \vec{\mathbf{m}} = \mathbf{\bar{\bar{R}}}\vec{\mathbf{m'}}.
-\end{equation}
-
-The rotation matrix $\mathbf{\bar{\bar{R}}}$ consists of the direction cosines $\delta_{xy'}$, which quantify the angular relationship between the unit vectors of the two local spherical bases:
-\begin{equation}
-\mathbf{\bar{\bar{R}}}=
+    \mathbf{R} =
     \begin{vmatrix}
-\delta_{rr'} & \delta_{r\theta'} & \delta_{r\lambda'} \\
-\delta_{\theta r'} & \delta_{\theta \theta'} & \delta_{\theta \lambda'} \\
-\delta_{\lambda r'} & \delta_{\lambda \theta'} & \delta_{\lambda \lambda'}
-    \end{vmatrix}.
-\end{equation}
-This matrix ensures that the vector components are consistently compared and combined across different local reference frames.
-
-The quantities $\delta_{xy'}$ denote the direction cosines between the local spherical unit vectors at the observation point $P$ and the source point $Q$, as listed in Table~\ref{tab:dircos}. These terms encode the angular relationships between coordinate bases at different locations and are functions of the colatitude and longitude differences.
-
-\begin{table}[h]
-\centering
-\caption{Expressions for direction cosines in spherical coordinates.}
-\label{tab:dircos}
-\begin{tabular}{ll}
-\hline
-\textbf{Variable} & \textbf{Expression} \\
-\hline
-$\delta_{rr'}$   & $\cos \theta \cos \theta' + \sin \theta \sin \theta' \cos(\phi - \phi')$ \\
-$\delta_{r\theta'}$ & $-\cos \theta \sin \theta' + \sin \theta \cos \theta' \cos(\phi - \phi')$ \\
-$\delta_{r\phi'}$   & $\sin \theta \sin(\phi - \phi')$ \\
-$\delta_{\theta r'}$ & $-\sin \theta' \cos \theta + \cos \theta' \sin \theta \cos(\phi - \phi')$ \\
-$\delta_{\theta \theta'}$ & $\sin \theta \sin \theta' + \cos \theta \cos \theta' \cos(\phi - \phi')$ \\
-$\delta_{\theta \phi'}$ & $\cos \theta \sin(\phi - \phi')$ \\
-$\delta_{\phi r'}$ & $-\sin \theta' \sin(\phi - \phi')$ \\
-$\delta_{\phi \theta'}$ & $-\cos \theta' \sin(\phi - \phi')$ \\
-$\delta_{\phi \phi'}$ & $\cos(\phi - \phi')$ \\
-\hline
-\end{tabular}
-\end{table}
-
-
-
-The kernel matrix $\mathbf{\bar{\bar{H}}}$ encapsulates the physical laws governing the magnetic field produced by a dipole in spherical coordinates and is defined as:
-\begin{equation}
-\mathbf{\bar{\bar{H}}} = 
-    \begin{vmatrix}
-H_{11} & H_{12} & H_{13}\\
-H_{21} & H_{22} & H_{23}\\
-H_{31} & H_{32} & H_{33}
+        \delta_{rr'} & \delta_{r\theta'} & \delta_{r\lambda'} \\
+        \delta_{\theta r'} & \delta_{\theta \theta'} & \delta_{\theta \lambda'} \\
+        \delta_{\lambda r'} & \delta_{\lambda \theta'} & \delta_{\lambda \lambda'}
     \end{vmatrix},
 \end{equation}
-with the individual elements given by
+where each element $\delta_{uv'}$ represents the dot product $\hat{\mathbf{u}} \cdot \hat{\mathbf{v}}'$. The expressions for these direction cosines, which depend on the coordinates of both the source and observation points, are listed in Table~\ref{tab:dircos}.
+
+\begin{table}[h]
+    \centering
+    \caption{Expressions for direction cosines in spherical coordinates.}
+    \label{tab:dircos}
+    \begin{tabular}{ll}
+        \hline
+        \textbf{Variable} & \textbf{Expression} \\
+        \hline
+        $\delta_{rr'}$      & $\cos \theta \cos \theta' + \sin \theta \sin \theta' \cos(\lambda - \lambda')$ \\
+        $\delta_{r\theta'}$  & $-\cos \theta \sin \theta' + \sin \theta \cos \theta' \cos(\lambda - \lambda')$ \\
+        $\delta_{r\lambda'}$  & $\sin \theta \sin(\lambda - \lambda')$ \\
+        $\delta_{\theta r'}$ & $-\sin \theta \cos \theta' + \cos \theta \sin \theta' \cos(\lambda - \lambda')$ \\
+        $\delta_{\theta \theta'}$ & $\sin \theta \sin \theta' + \cos \theta \cos \theta' \cos(\lambda - \lambda')$ \\
+        $\delta_{\theta \lambda'}$ & $\cos \theta \sin(\lambda - \lambda')$ \\
+        $\delta_{\lambda r'}$ & $-\sin \theta' \sin(\lambda - \lambda')$ \\
+        $\delta_{\lambda \theta'}$ & $-\cos \theta' \sin(\lambda - \lambda')$ \\
+        $\delta_{\lambda \lambda'}$ & $\cos(\lambda - \lambda')$ \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Once the magnetic moment is expressed in the observer's reference frame, the magnetic field vector $\mathbf{B}$ can be calculated. The complete relationship is a linear transformation given by:
+\begin{equation}
+    \mathbf{B} = \frac{\mu_0}{4\pi} \mathbf{H} \mathbf{R} \mathbf{m'}.
+\end{equation}
+Here, $\mu_0$ is the magnetic permeability of free space, and $\mathbf{H}$ is the kernel matrix that encapsulates the physics of the dipole field in spherical coordinates. The components of $\mathbf{H}$ are functions of the radial distances ($r, r'$) and the direction cosines, defined as:
+\begin{equation}
+    \mathbf{H} = 
+    \begin{vmatrix}
+        H_{rr} & H_{r\theta} & H_{r\lambda}\\
+        H_{\theta r} & H_{\theta \theta} & H_{\theta \lambda}\\
+        H_{\lambda r} & H_{\lambda \theta} & H_{\lambda \lambda}
+    \end{vmatrix},
+\end{equation}
+with the individual elements given by:
 \begin{equation}
     \begin{cases}
-H_{11} = 3\frac{(r - r' \delta_{rr'}) (r \delta_{rr'} - r')}{\ell^5} - \frac{\delta_{rr'}}{\ell^3}, \\
-H_{12} = 3\frac{(r - r' \delta_{rr'}) (r \delta_{r\theta'})}{\ell^5} - \frac{\delta_{r\theta'}}{\ell^3}, \\
-H_{13} = 3\frac{(r - r' \delta_{rr'}) (r \delta_{r\lambda'})}{\ell^5} - \frac{\delta_{r\lambda'}}{\ell^3}, \\
-H_{21} = -3\frac{(r' \delta_{\theta r'}) (r \delta_{rr'} - r')}{\ell^5} + \frac{\delta_{\theta r'}}{\ell^3}, \\
-H_{22} = -3\frac{(r' \delta_{\theta r'}) (r \delta_{r\theta'})}{\ell^5} + \frac{\delta_{\theta \theta'}}{\ell^3}, \\
-H_{23} = -3\frac{(r' \delta_{\theta r'})(r \delta_{r\lambda'})}{\ell^5} + \frac{\delta_{\theta \lambda'}}{\ell^3}, \\
-H_{31} = -3\frac{(r' \delta_{\lambda r'})(r \delta_{rr'} - r')}{\ell^5} + \frac{\delta_{\lambda r'}}{\ell^3}, \\
-H_{32} = -3\frac{(r' \delta_{\lambda r'})(r \delta_{r\theta'})}{\ell^5} + \frac{\delta_{\lambda \theta'}}{\ell^3}, \\
-H_{33} = -3\frac{(r' \delta_{\lambda r'})(r \delta_{r\lambda'})}{\ell^5} + \frac{\delta_{\lambda \lambda'}}{\ell^3}.
+        H_{rr} = \frac{3(r - r' \delta_{rr'}) (r \delta_{rr'} - r')}{\ell^5} - \frac{\delta_{rr'}}{\ell^3} \\
+        H_{r\theta} = \frac{3(r - r' \delta_{rr'}) (r \delta_{r\theta'})}{\ell^5} - \frac{\delta_{r\theta'}}{\ell^3} \\
+        H_{r\lambda} = \frac{3(r - r' \delta_{rr'}) (r \delta_{r\lambda'})}{\ell^5} - \frac{\delta_{r\lambda'}}{\ell^3} \\
+        H_{\theta r} = -\frac{3(r' \delta_{\theta r'}) (r \delta_{rr'} - r')}{\ell^5} + \frac{\delta_{\theta r'}}{\ell^3} \\
+        H_{\theta \theta} = -\frac{3(r' \delta_{\theta r'}) (r \delta_{r\theta'})}{\ell^5} + \frac{\delta_{\theta \theta'}}{\ell^3} \\
+        H_{\theta \lambda} = -\frac{3(r' \delta_{\theta r'})(r \delta_{r\lambda'})}{\ell^5} + \frac{\delta_{\theta \lambda'}}{\ell^3} \\
+        H_{\lambda r} = -\frac{3(r' \delta_{\lambda r'})(r \delta_{rr'} - r')}{\ell^5} + \frac{\delta_{\lambda r'}}{\ell^3} \\
+        H_{\lambda \theta} = -\frac{3(r' \delta_{\lambda r'})(r \delta_{r\theta'})}{\ell^5} + \frac{\delta_{\lambda \theta'}}{\ell^3} \\
+        H_{\lambda \lambda} = -\frac{3(r' \delta_{\lambda r'})(r \delta_{r\lambda'})}{\ell^5} + \frac{\delta_{\lambda \lambda'}}{\ell^3}
     \end{cases}
 \end{equation}
-
-In whitch,  $\ell = |\vec{\mathbf{r}} - \vec{\mathbf{r}'}|$ is the Euclidean distance between the observation point $\vec{\mathbf{r}}$ and the source point $\vec{\mathbf{r}'}$. It can be computed in spherical geometry as:
-
+In these expressions, $\ell$ is the Euclidean distance between the observation point $\mathbf{r}$ and the source point $\mathbf{r}'$, which can be computed in spherical geometry as:
 \begin{equation}
-    \ell = \sqrt{r^2 + r'^2 - 2 r r' \delta_{rr'}},
+    \ell = \sqrt{r^2 + r'^2 - 2 r r' \delta_{rr'}}.
 \end{equation}
 
-\noindent
-where $\delta_{rr'}$ is the direction cosine between the radial unit vectors at the observation and source points.
+This mathematical framework allows for the accurate and robust computation of magnetic fields in a spherical Earth context, forming the core of the forward modeling required by our inversion methodology.
 
-This mathematical framework allows us to accurately compute the magnetic field produced by dipole sources in a spherical Earth context. The formalism is general and can be applied to diverse geophysical scenarios, including the modeling of aeromagnetic data, global geomagnetic field modeling, and studies of lithospheric magnetization.
+\subsubsection{Conversion between geodetic and spherical coordinates}
 
-Moreover, expressing the magnetic field in local spherical coordinates facilitates the combination of multiple dipole sources distributed over the Earth's surface or subsurface, as the spherical basis naturally accounts for the planet's curvature. This advantage is particularly useful for inversion algorithms and forward modeling techniques that aim to recover magnetization distributions from observed data.
+Geophysical survey data are typically provided in a geodetic coordinate system (geodetic latitude $\varphi$, longitude $\lambda$, and height above a reference ellipsoid $h$). However, the physical equations for a central potential field, like that of a dipole, are more simply formulated in a spherical coordinate system (radius from the center $r$, geocentric colatitude $\theta$, and longitude $\lambda$). Therefore, a conversion between these two systems is a necessary practical step.
 
-\subsubsection{Conversion from spherical coordinates to geodetic coordinates}
-Usually, most publicly available airborne magnetic data are provided in the geodetic coordinate system. 
-To facilitate the workflow for the user, we automatically apply all necessary corrections 
-(Figure~\ref{fig_coordinate_systems}b). 
-To rotate the magnetic field vector between the geodetic and spherical coordinate systems, 
-we perform a rotation around the eastward axis by the difference between $\varphi$, the geodetic latitude, and $\phi$,the spherical latitude.
-
+The primary difference lies between the geodetic latitude ($\varphi$), which is the angle between the equatorial plane and the normal to the ellipsoid, and the spherical or geocentric latitude ($\phi = 90^\circ - \theta$), which is the angle to the center of the sphere (Figure~\ref{fig_coordinate_systems}b). The difference between these two angles defines a rotation:
 \begin{equation}
-\Delta\Phi= \varphi - \phi.
+    \Delta\Phi = \varphi - \phi.
 \end{equation}
-
-For a vector with components $(E, N, U)$ in the geodetic system, the transformation 
-to spherical coordinates $(E', N', R')$ is given by:
+To transform a vector with components $(E, N, U)$ (East, North, Up) in the local geodetic system to spherical components $(B_r, B_\theta, B_\lambda)$ in the local spherical system, we apply a rotation around the eastward axis:
 \begin{equation}
-\begin{aligned}
-        E' &= E, \\
-    N' &= \cos(\Delta\Phi)\, N + \sin(\Delta\Phi)\, U, \\
-    R' &= -\sin(\Delta\Phi)\, N + \cos(\Delta\Phi)\, U.
-\end{aligned}
+    \begin{aligned}
+        B_\lambda &= -E, \\
+        B_\theta &= -\cos(\Delta\Phi) N - \sin(\Delta\Phi) U, \\
+        B_r &= \sin(\Delta\Phi) N - \cos(\Delta\Phi) U.
+    \end{aligned}
 \end{equation}
-
-
-The inverse transformation (spherical to geodetic) is obtained by changing the sign 
-of $\Delta\Phi$ in the above equations.
-
+The inverse transformation (spherical to geodetic) is obtained by changing the sign of $\Delta\Phi$ in the rotation matrix. This conversion is handled automatically within our workflow to facilitate the use of standard public datasets.
 
 \subsection{Equivalent sources in spherical coordinates}
 
-In the context of spherical geometry, magnetic field modeling is carried out in a local orthogonal reference frame composed of radial ($r$), colatitudinal ($\theta$), and longitudinal ($\phi$) unit vectors. Analytical expressions for the magnetic field components of a dipole in this coordinate system are presented in \citet{Langel1998}.
+The equivalent source technique models an observed potential field using the superposition of fields from a set of discrete sources distributed on an equivalent layer \citep{Dampney1969, OliveiraJunior2023}. In this work, we use this technique to model the total-field magnetic anomaly by estimating the magnetic moment magnitudes of a set of dipole sources.
 
-The equivalent sources technique approximates the measured magnetic field by inferring a set of hypothetical sources, arranged in an equivalent layer, whose collective effect matches the observations \citep{Dampney1969, Cordell1992, OliveiraJunior2023}.  
-Let $\mathbf{d}^o$ be the vector of $N$ observed total-field anomaly values $\Delta T$ at positions $(\phi_i, \theta_i, r_i)$. In spherical coordinates, these observations can be expressed as:
-$$
-d^o_i \approx f_i(\mathbf{c}) = \sum_{j=1}^P a_{ij} c_j,
-$$
-where $a_{ij}$ is the total-field anomaly at the $i$-th observation point generated by a unit-moment dipole placed at $(\phi_j, \theta_j, r_j)$, and $c_j$ is the magnitude of the magnetic moment of the $j$-th source.
+Let $\mathbf{d}^o$ be the vector containing $N$ observations of the total-field anomaly. As derived in studies like \citet{Uppal2025}, the total-field anomaly, $\Delta T$, can be approximated as the projection of the anomalous magnetic field vector, $\mathbf{B}$, onto the unit vector of the geomagnetic main field, $\hat{\mathbf{F}}$:
+\begin{equation}
+    \Delta T \approx \mathbf{B} \cdot \hat{\mathbf{F}}.
+\end{equation}
+The total anomalous field, $\mathbf{B}$, at any observation point is the sum of the contributions from all $M$ equivalent sources. Therefore, the predicted total-field anomaly $d_i$ for the $i$-th observation is given by the summation:
+\begin{equation}
+    d_i = \sum_{j=1}^{M} A_{ij} m_j,
+\end{equation}
+where $m_j$ is the magnetic moment magnitude of the $j$-th source, and $A_{ij}$ is the element of the sensitivity matrix. This element is defined as:
+\begin{equation}
+    A_{ij} = \mathbf{b}_{ij} \cdot \hat{\mathbf{F}},
+\end{equation}
+where $\mathbf{b}_{ij}$ is the magnetic field vector generated by the $j$-th source with a unit magnetic moment at the $i$-th observation point, as derived in the previous section.
 
-In matrix notation, the forward problem is written as:
+Writing this system of equations for all $N$ observation points results in the matrix form:
+\begin{equation}
+\begin{bmatrix}
+    d_1 \\ d_2 \\ \vdots \\ d_N
+\end{bmatrix}_{N \times 1}
+=
+\begin{bmatrix}
+    \mathbf{b}_{11} \cdot \hat{\mathbf{F}} & \mathbf{b}_{12} \cdot \hat{\mathbf{F}} & \cdots & \mathbf{b}_{1M} \cdot \hat{\mathbf{F}} \\
+    \mathbf{b}_{21} \cdot \hat{\mathbf{F}} & \mathbf{b}_{22} \cdot \hat{\mathbf{F}} & \cdots & \mathbf{b}_{2M} \cdot \hat{\mathbf{F}} \\
+    \vdots & \vdots & \ddots & \vdots \\
+    \mathbf{b}_{N1} \cdot \hat{\mathbf{F}} & \mathbf{b}_{N2} \cdot \hat{\mathbf{F}} & \cdots & \mathbf{b}_{NM} \cdot \hat{\mathbf{F}} \\
+\end{bmatrix}_{N \times M}
+\begin{bmatrix}
+    m_1 \\ m_2 \\ \vdots \\ m_M
+\end{bmatrix}_{M \times 1}.
+\end{equation}
+This linear system, which constitutes the forward problem, can be expressed more compactly as:
+\begin{equation}
+    \mathbf{d} = \mathbf{A} \mathbf{m}.
+    \label{eq:forward-problem}
+\end{equation}
 
-% \begin{equation}
-% \textcolor{orange}{\begin{bmatrix}
-%     d_1 \\ d_2 \\ \vdots \\ d_N
-% \end{bmatrix}_{Nx1}} = \begin{bmatrix}
-%     \vecbf{b}_{11} \cdot \uvec{F} & \vecbf{b}_{12} \cdot \uvec{F} & \cdots & \vecbf{b}_{1M} \cdot \uvec{F} \\
-%     \vecbf{b}_{21} \cdot \uvec{F} & \vecbf{b}_{22} \cdot \uvec{F} & \cdots & \vecbf{b}_{2M} \cdot \uvec{F} \\
-%     \vdots & \vdots & \vdots & \vdots \\
-%     \vecbf{b}_{N1} \cdot \uvec{F} & \vecbf{b}_{N2} \cdot \uvec{F} & \cdots & \vecbf{b}_{NM} \cdot \uvec{F} \\
-% \end{bmatrix}_{NxM} \textcolor{teal}{\begin{bmatrix}
-%     m_1 \\ m_2 \\ \vdots \\ m_j
-% \end{bmatrix}_{Mx1}} \ ,
-% \end{equation}
+The inverse problem consists of estimating the magnetic moment vector $\mathbf{m}$ that best fits the observed data $\mathbf{d}^o$. Since this problem is often ill-posed, a regularization term is introduced to stabilize the solution. We achieve this by minimizing a Tikhonov regularized objective function, also known as a damped least-squares problem \citep{Soler2021, Uppal2025}:
+\begin{equation}
+    \phi(\mathbf{m}) = (\mathbf{d}^o - \mathbf{A} \mathbf{m})^\mathsf{T} (\mathbf{d}^o - \mathbf{A} \mathbf{m}) + \mu\, \mathbf{m}^\mathsf{T} \mathbf{m},
+    \label{eq:objective-function}
+\end{equation}
+where the first term is the squared $L_2$-norm of the data misfit (or residuals), the second term is the squared $L_2$-norm of the solution, and $\mu > 0$ is a scalar regularization parameter. This parameter controls the trade-off between fitting the data and minimizing the norm of the estimated moments, which enforces a smoother solution.
 
-% \begin{equation}
-%     \textcolor{orange}{\bvec{d}} = \mat{A} \textcolor{teal}{\bvec{c}}
-%     \ ,
-%     \label{eq:forward-matrices}
-% \end{equation}
+The minimum of the objective function in Equation~\ref{eq:objective-function} is found by setting its gradient with respect to $\mathbf{m}$ to zero, which yields the well-known system of normal equations:
+\begin{equation}
+    (\mathbf{A}^\mathsf{T} \mathbf{A} + \mu \mathbf{I})\,\mathbf{m} = \mathbf{A}^\mathsf{T} \mathbf{d}^o,
+    \label{eq:normal-equations}
+\end{equation}
+where $\mathbf{I}$ is the identity matrix. Solving this linear system for $\mathbf{m}$ provides the estimated magnetic moments of the equivalent sources.
 
-where $\mathbf{A}$ is the sensitivity (Jacobian) matrix containing the geometric factors and dipole orientation terms, $\mathbf{c}$ is the vector of source moments, and $\mathbf{d}$ is the predicted data.
-
-The inverse problem consists of determining $\mathbf{c}$ such that the predicted data best reproduce the observations, while enforcing stability through a minimum-norm constraint. This can be formulated as the minimization of the damped least-squares objective function:
-$$
-\Phi(\mathbf{c}) = \mathbf{r}^\mathsf{T} \mathbf{r} + \mu\, \mathbf{c}^\mathsf{T} \mathbf{c},
-$$
-where $\mathbf{r} = \mathbf{d}^o - \mathbf{A} \mathbf{c}$ is the residual vector, and $\mu > 0$ is the regularization parameter controlling the trade-off between data misfit and model smoothness.
-
-Minimizing $\Phi(\mathbf{c})$ yields the normal equations:
-$$
-(\mathbf{A}^\mathsf{T} \mathbf{A} + \mu \mathbf{I})\,\mathbf{c} = \mathbf{A}^\mathsf{T} \mathbf{d}^o,
-$$
-where $\mathbf{I}$ is the identity matrix.
+Once the vector of magnetic moment magnitudes $\mathbf{m}$ is estimated, it can be used not only to predict the total-field anomaly at any location but also to calculate the full anomalous magnetic field vector, $\mathbf{B}$, and its components (e.g., $B_r, B_\theta, B_\lambda$). This is achieved by summing the vector contributions of all sources without the final projection onto the main field direction:
+\begin{equation}
+    \mathbf{B}(\mathbf{r}) = \sum_{j=1}^{M} \mathbf{b}_{j}(\mathbf{r}) m_j,
+\end{equation}
+where $\mathbf{b}_{j}(\mathbf{r})$ is the vector field from the $j$-th source with a unit magnetic moment at a given location $\mathbf{r}$. This transformation of a scalar anomaly into its vector components is a powerful application of the equivalent source technique, particularly when using a dual-layer approach to properly model multi-scale sources \citep{Li2020, Uppal2025}.
 
 \subsection{Gradient boosting for large datasets}
 
-We adopt the gradient-boosted equivalent sources method proposed by \citet{soler2021} to efficiently fit spherical equivalent source models to large datasets. This approach avoids the construction of a global Jacobian matrix by decomposing the inverse problem into a sequence of local problems, solved iteratively.
+To address the computational challenges associated with inverting large-scale datasets, we adopt the gradient-boosted equivalent sources method proposed by \citet{Soler2021}. The primary advantage of this approach is that it avoids the construction, storage, and inversion of the full $N \times M$ sensitivity matrix. Instead, it decomposes the global inverse problem into a sequence of smaller, localized problems that are solved iteratively.
 
-The predicted data are modeled as the additive sum of local predictions:
+The core of the method is to reframe the solution as an additive model, where the final predicted data, $\mathbf{d}$, is built by summing the contributions from sources fitted in each of the $K$ local windows:
 \begin{equation}
-\mathbf{d} = \sum_{k=1}^{K} \mathbf{B}_k \mathbf{m}_k,
+    \mathbf{d} = \sum_{k=1}^{K} \mathbf{A}_k \mathbf{m}_k,
 \end{equation}
-in which $\mathbf{B}_k$ is the sensitivity matrix for the $k$-th window, and $\mathbf{m}_k$ is the vector of source moments estimated in that window.
+where $\mathbf{A}_k$ is the sensitivity matrix relating the sources in the $k$-th window to all observation points, and $\mathbf{m}_k$ is the vector of corrective source moments estimated in that window. The full procedure is detailed in Algorithm~\ref{alg:gradient-boosting}.
 
-The algorithm proceeds by initializing the residual vector with the observed data:
-\begin{equation}
-\mathbf{r}_0 = \mathbf{d}^o.
-\end{equation}
-Then, for each window $k$, the following steps are repeated:
-\begin{enumerate}
-    \item Compute the reduced Jacobian $\tilde{\mathbf{B}}_k$ using sources and data inside the window;
-    \item Solve a weighted least-squares problem to estimate $\mathbf{m}_k$;
-    \item Predict data across the full domain: $\mathbf{d}_k = \mathbf{B}_k \mathbf{m}_k$;
-    \item Update the residual: $\mathbf{r}_k = \mathbf{r}_{k-1} - \mathbf{d}_k$;
-    \item Accumulate the global model by adding $\mathbf{m}_k$ into the corresponding positions of $\mathbf{m}$.
-\end{enumerate}
+\begin{algorithm}
+\caption{Gradient-Boosted Equivalent Sources \citep{Soler2021}}
+\label{alg:gradient-boosting}
+\begin{algorithmic}[1]
+\State Initialize the global moment vector $\mathbf{m} \leftarrow \mathbf{0}$.
+\State Define the initial residual vector $\mathbf{r}_0 \leftarrow \mathbf{d}^o$.
+\State Generate a randomly shuffled list of $K$ window indices.
+\For{each window index $k$ in the shuffled list}
+    \State Select residuals $\tilde{\mathbf{r}}_{k-1}$ for data points inside the $k$-th window.
+    \State Compute the local Jacobian matrix $\tilde{\mathbf{A}}_k$ with data points and sources inside the $k$-th window.
+    \State Solve for the corrective moments $\mathbf{m}_k$:
+    \Statex \hspace{\algorithmicindent} $\mathbf{m}_k \leftarrow (\tilde{\mathbf{A}}_k^\mathsf{T} \tilde{\mathbf{A}}_k + \mu_k \mathbf{I})^{-1} \tilde{\mathbf{A}}_k^\mathsf{T} \tilde{\mathbf{r}}_{k-1}$
+    \State Calculate the global prediction from the local sources: $\mathbf{d}_k \leftarrow \mathbf{A}_k \mathbf{m}_k$.
+    \State Update the global residuals: $\mathbf{r}_k \leftarrow \mathbf{r}_{k-1} - \mathbf{d}_k$.
+    \State Accumulate the global solution by adding $\mathbf{m}_k$ to the corresponding entries in $\mathbf{m}$.
+\EndFor
+\end{algorithmic}
+\end{algorithm}
 
-A damping factor can be included in each local inversion to improve stability and avoid overfitting. The order in which windows are processed is randomized at each iteration to reduce spatial artifacts. Because each local solution contributes linearly to the predicted data, the final prediction can be evaluated efficiently using the full set of source coefficients.
+As highlighted by \citet{Soler2021}, iterating through the windows in a randomized order is crucial for faster convergence and to avoid spatial artifacts that can arise from a sequential processing order. After iterating through all windows, the accumulated vector $\mathbf{m}$ contains the final estimated magnetic moments for all sources. This window-by-window strategy drastically reduces memory requirements because only the small, local sensitivity matrices ($\tilde{\mathbf{A}}_k$) are ever explicitly constructed, making the method highly scalable for datasets with millions of observations.
 
-This strategy enables efficient inversion of millions of data points without requiring excessive memory or computational resources.
+\subsection{Windowing on the sphere by equal-area subdivision}
+
+The implementation of a window-based method like gradient boosting in a spherical framework requires a robust technique for partitioning the sphere's surface into a set of discrete windows. For the inversion to be unbiased, it is crucial that these windows have equal areas, ensuring that data from different regions contribute equally to the solution. While various methods for spherical tessellation exist, such as those based on hierarchical grids like HEALPix \citep{Gorski1998}, they can introduce complexities in assigning points to cells.
+
+To define the windows for our algorithm, we adopt the straightforward and effective isolatitudinal method proposed by \citet{Malkin2016}. This approach partitions the sphere into equal-area cells that are well-suited for our windowing process, as detailed in Algorithm~\ref{alg:equal-area-subdivision}. A key advantage of this method is that the resulting cells are quasi-rectangular and aligned with parallels and meridians, which greatly simplifies the task of assigning observation points and sources to their respective windows. We leverage this capability to define the set of equal-area windows that serve as the foundation for the iterative, localized inversions performed by the gradient-boosting algorithm.
+
+\begin{algorithm}
+\caption{Equal-Area Subdivision of a Sphere \citep{Malkin2016}}
+\label{alg:equal-area-subdivision}
+\begin{algorithmic}[1]
+\State Define an initial set of latitudinal bands, often with constant width (e.g., every $10^\circ$).
+\For{each latitudinal band $k$}
+    \State Calculate the central latitude, $\phi_c$.
+    \State Determine the number of longitudinal cells, $n_k$, for the band, such that $n_k$ is proportional to $\cos(\phi_c)$ and is a divisor of $360^\circ$.
+    \State Calculate the longitudinal width for cells in this band: $\Delta\lambda_k \leftarrow 360^\circ / n_k$.
+\EndFor
+\State Initialize latitudinal boundaries $\{\phi_0, \phi_1, \dots, \phi_K\}$.
+\While{the cell areas are not equal within a desired tolerance $\epsilon$}
+    \State Calculate the area of cells in each band based on the current latitudinal boundaries.
+    \State Adjust the latitudinal boundaries $\{\phi_1, \dots, \phi_{K-1}\}$ to equalize the areas between bands.
+\EndWhile
+\State The final set of latitudinal and longitudinal boundaries defines the equal-area windows.
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Hyperparameter Tuning with Block Cross-Validation for Airborne Surveys}
+
+A crucial step in our methodology is the selection of optimal hyperparameters for the equivalent source model, primarily the depth of the sources and the regularization parameter. In the context of large airborne surveys, this selection is particularly challenging but essential for a robust model \citep{Uppal2025, Soler2021}. Airborne magnetic data are characterized by strong spatial autocorrelation, with high data density along flight lines and large, un-sampled areas between them. This structure violates the assumption of data independence required by conventional random cross-validation. If used, random validation would lead to overly optimistic error estimates, as the model would be tested on points geographically close to the training data, failing to assess its true generalization capability \citep{Roberts2017}.
+
+To obtain a realistic assessment of the model's predictive performance, we use \textit{block cross-validation}, a strategy specifically designed for data with spatial or temporal dependence \citep{Roberts2017}. This method respects the spatial structure of the data by ensuring independence between training and test sets. The survey area is first partitioned into non-overlapping spatial blocks. The cross-validation folds are then constructed using these entire blocks, rather than individual points. By training the model on one set of blocks and testing it on a spatially separate set, this approach forces the model to generalize. The resulting error metric is a much more honest estimate of how the model would perform when predicting for a new, unsurveyed area, which is the most realistic use-case scenario.
+
+Our implementation for selecting the optimal set of hyperparameters follows the procedure detailed in Algorithm~\ref{alg:block-cv}. We define a grid of candidate values for the model hyperparameters. For each combination, a k-fold cross-validation is performed using the spatial blocks to compute an average error score. The set of hyperparameters that minimizes this score is chosen for the final model. This robust validation approach has been successfully applied in recent large-scale equivalent source studies on airborne data to guide the selection of optimal model parameters \citep{Soler2021, Uppal2025}.
+
+\begin{algorithm}
+\caption{Hyperparameter selection using Block K-Fold Cross-Validation}
+\label{alg:block-cv}
+\begin{algorithmic}[1]
+\State Partition the survey area into a set of $L$ non-overlapping spatial blocks.
+\State Randomly assign the blocks to $k$ folds $\{F_1, F_2, \dots, F_k\}$.
+\State Define a grid of candidate hyperparameter sets $\Theta$.
+\State Initialize `min\_score` $\leftarrow \infty$.
+\For{each hyperparameter set $\theta$ in $\Theta$}
+    \State Initialize a list of fold scores, `scores`.
+    \For{$i = 1$ to $k$}
+        \State Set test set to data in blocks from fold $F_i$; training set to data from all other folds.
+        \State Fit model $\mathbf{m}_i$ on the training set using hyperparameters $\theta$.
+        \State Predict data $\mathbf{d}_{\text{pred}}$ on the coordinates of the test set.
+        \State Calculate score$_i$ (e.g., RMSE) and add it to `scores`.
+    \EndFor
+    \State `avg\_score` $\leftarrow$ mean of `scores`.
+    \If{`avg\_score` < `min\_score`}
+        \State `min\_score` $\leftarrow$ `avg\_score`.
+        \State $\theta^* \leftarrow \theta$.
+    \EndIf
+\EndFor
+\State The optimal hyperparameter set is $\theta^*$.
+\end{algorithmic}
+\end{algorithm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
