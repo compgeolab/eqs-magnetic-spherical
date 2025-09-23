@@ -110,16 +110,30 @@ FALAR ALGO SOBRE VALIDACAO.
 \subsection{Magnetic field of a dipole in spherical coordinates}
 
 This section details the mathematical framework for computing the magnetic field vector
-$\vec{\mathbf{B}}$ from a magnetic dipole source, based on the classical works of
-\citet{VonFrese1981} and \citet{Langel1998}. The formulation requires the definition of three
-distinct coordinate systems. The primary reference is a geocentric Cartesian system (X, Y, Z),
-within which a geocentric spherical system ($r, \theta, \phi$) is used to formulate the physics
-(Figure~\ref{fig_coordinate_systems}a). However, as airborne survey data are typically provided in
-a geodetic system (latitude $\varphi$, longitude $\lambda$, height $h$), this system must also be
-considered. Figure~\ref{fig_coordinate_systems}b illustrates the geometric relationship between the
-geodetic and geocentric latitudes, whose difference arises from the Earth's oblateness. The
-practical application of the physical model to real-world data therefore necessitates
-transformations between these coordinate systems.
+$\vec{\mathbf{B}}$ from a magnetic dipole source, based on the seminal works of
+\citet{VonFrese1981} and \citet{Langel1998}.
+The formulation requires the definition of three distinct coordinate systems
+(Figure~\ref{fig_coordinate_systems}).
+The primary reference is a geocentric Cartesian system $(X, Y, Z)$,
+with origin at the center of the Earth, $Z$-axis coinciding with the Earth's
+axis of rotation, $X$-axis along the equatorial plane and aligned with the
+Greenwich meridian, and the $Y$-axis completing a right-handed system.
+The geocentric coordinates can also be described in terms of spherical
+coordinates $(r, \theta, \lambda)$, with $r$ being the radial distance, $\theta$
+the colatitude, and $\lambda$ the longitude
+(Figure~\ref{fig_coordinate_systems}a).
+DESCREVER SISTEMA TOPOCENTRICO DOS PONTOS P E Q.
+This geocentric spherical system is used to formulate the physics.
+However, data are typically provided in a geodetic system $(h, \varphi,
+\lambda)$ (Figure~\ref{fig_coordinate_systems}b), with $h$ being the height
+above a reference ellipsoid (e.g., WGS84), $\varphi$ the geodetic latitude, and
+$\lambda$ the longitude.
+Figure~\ref{fig_coordinate_systems}b illustrates the geometric relationship
+between the geodetic and geocentric latitudes, whose difference arises from the
+Earth's oblateness.
+Therefore, the practical application of the equivalent source model, formulated
+in geocentric spherical coordinates, to real-world data, provided in a geodetic
+system, necessitates transformations between these coordinate systems.
 
 A key challenge in spherical coordinates is that the local orthonormal basis vectors
 ($\hat{\mathbf{r}}$, $\hat{\boldsymbol{\theta}}$, $\hat{\boldsymbol{\lambda}}$)
