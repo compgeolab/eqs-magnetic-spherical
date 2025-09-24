@@ -11,51 +11,67 @@ Once the physical properties of these sources are estimated, they can be used
 to compute derived quantities at any location, such as data continuation
 \citep{Emilia1973, ZhiWen2022, Li2023}, gridding and interpolation
 \citep{Mendonca1994, Mendonca1995, Dampney1969, Li2006, Cordell1992}, and
-reduction to the pole \citep{Gusp2009, Li2001, Silva1986}.
+reduction to the pole \citep{Guspi2009, Li2001, Silva1986}.
 
 Although effective, the practical application of the equivalent sources
 technique faces a hurdle: its high computational cost.
 Most formulations of the equivalent sources inverse problem require the
 solution of dense linear systems, whose size is equal to or greater than the
 number of data.
-Since modern airborne surveys generate large volumes of data, the solution of
-these linear systems becomes demanding in terms of both processing time and
-computer memory \citep{OliveiraJunior2023}.
-To address this challenge, a variety of strategies have been developed to
-improve computational efficiency.
-These include methods based on moving data windows
-\citep{Leao1989,Soler2021,Uppal2025}, sparsity-inducing transformations using
-wavelets \citep{Li2010} INCLUIR MAIS ESTUDOS.
 
-FALTA DIZER ALGO SOBRE CARTESIANO.
-For geophysical studies spanning regional to continental scales, this reliance
-on a Cartesian framework introduces a second, more fundamental limitation:
-geometric distortion.
+Airborne magnetic data are characterized by strong spatial autocorrelation, 
+with high data density along flight lines and large, un-sampled areas between them.
+This structure violates the assumption of data independence required by conventional
+random cross-validation.
+If used, random validation would lead to overly optimistic error estimates, 
+as the model would be tested on points geographically close to the training data, 
+failing to assess its true generalization capability 
+\citep{Roberts2017, Soler2021, Uppal2025}.
+
+Since modern airborne surveys generate large volumes of data, 
+solving the linear systems of the equivalent-layer technique becomes 
+demanding in terms of both processing time and memory 
+\citep{OliveiraJunior2023}. To improve computational efficiency, 
+several strategies have been developed. These include methods 
+based on moving data windows \citep{Leao1989,Soler2021,Uppal2025}, 
+column- and row-action updates \citep{Cordell1992,Mendonca1994,Guspi2009}, 
+reparametrization of the equivalent layer \citep{OliveiraJr2013,Mendonca2020}, 
+sparsity-inducing transformations using wavelets and quadtree discretization 
+\citep{Li2010,Barnes2011}, iterative methods using the full sensitivity matrix 
+\citep{Xia1991,Xia1993,Siqueira2017,Jirigalatu2019}, and iterative or direct 
+deconvolution exploiting Block-Toeplitz Toeplitz-block (BTTB) structures 
+\citep{Takahashi2020,Takahashi2022}.
+
+Most equivalent source approaches have been traditionally formulated in Cartesian 
+coordinates, which are adequate for local studies but become increasingly distorted 
+when applied to regional or continental scales.
 As the survey area increases, the Earth's curvature becomes non-negligible, and
 projecting data onto a flat grid leads to inaccuracies in area and shape.
-SE ACHAR CITACAO SERIA OTIMO.
 Consequently, spherical formulations are geometrically more appropriate for
 large-scale modeling.
 
-The equivalent source method in spherical coordinates was first introduced by
-\citet{VonFrese1981} as a computationally efficient alternative to spherical
-harmonics, which become computationally expensive at high degrees, and to
-Fourier transforms, which require planar regridding of spherical data.
-FALTOU FALAR MAIS SOBRE EFICIENCIA E COMO ELE FAZ.
-Their formulation demonstrated that potential field anomalies could be
-represented by equivalent point sources directly on the sphere, enabling
-continuation, differentiation, and reduction-to-the-pole operations without
-distorting the data. CHECAR SE ELE FEZ RTP MESMO.
-More recently, \citet{Kother2015} extended this methods to global lithospheric
-magnetic field modelling using satellite data in combination with spherical
-harmonics.
-By distributing equivalent monopoles on an icosahedral grid and applying robust
-regularization techniques, they achieved localized and scalable representations
-of the lithospheric field while preserving the ability to transform results
-into for global comparisons.
-DESCREVER MAIS SOBRE O MÉTODO: NUMERO DE FONTES, COMO FUNCIONA, OUTROS
-TRABALHOS RELACIONADOS. MÉTODO ORIGINAL:  O'Brien M.S. Parker R.L. Regularized
-geomagnetic field modelling using monopoles
+The equivalent source method in spherical coordinates was first introduced by 
+\citet{VonFrese1981} as a computationally efficient alternative to spherical harmonics, 
+which become expensive at high degrees, and to Fourier transforms, which require planar 
+regridding of spherical data. Their approach relates potential field anomalies directly to 
+a distribution of equivalent point sources on a sphere through least squares inversion, 
+allowing the anomalies to be reproduced with far fewer parameters than spherical harmonics. 
+This formulation is numerically efficient because, once the source coefficients are solved, 
+continuation, differentiation, and filtering operations can be carried out by simply 
+recomputing the anomaly of the same source distribution at new conditions. Moreover, they 
+demonstrated that magnetic anomalies could be differentially reduced to the pole using 
+equivalent dipoles, thus enabling pole reduction directly in the spherical domain without 
+distortion.
+
+More recently, \citet{Kother2015} extended the regularized monopole
+approach of \citet{Obrien1994} to global lithospheric field modelling
+using CHAMP satellite data. They placed $\sim30,000$ monopoles on
+an icosahedral grid 100 km below the surface and estimated their
+strengths through an iteratively reweighted least-squares inversion with
+quadratic or entropy-based regularization. This strategy provided
+localized and scalable representations of the lithospheric field, while
+preserving the ability to transform results into spherical harmonics for
+global comparisons.
 
 Adopting a spherical geometry, however, presents new challenges for
 implementing window-based computational strategies like the gradient-boosting
@@ -101,8 +117,6 @@ Specifically, our approach extends the gradient-boosting strategy to the sphere
 \citep{Soler2021} and employs a dual-layer configuration \citep{Uppal2025} into
 a windowed inversion framework adapted for the Earth's spherical geometry.
 COLOCAR UM BLA BLA BLA DO QUE MAIS FOI FEITO.
-FALAR ALGO SOBRE VALIDACAO.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Methodology}
@@ -477,13 +491,7 @@ explicitly constructed, making the method highly scalable for datasets with mill
 A crucial step in our methodology is the selection of optimal hyperparameters for the equivalent
 source model, primarily the depth of the sources and the regularization parameter. In the context
 of large airborne surveys, this selection is particularly challenging but essential for a robust
-model \citep{Uppal2025, Soler2021}. Airborne magnetic data are characterized by strong spatial
-autocorrelation, with high data density along flight lines and large, un-sampled areas between them.
-This structure violates the assumption of data independence required by conventional random cross-validation.
-If used, random validation would lead to overly optimistic error estimates, as the model would be
-tested on points geographically close to the training data, failing to assess its true generalization
-capability \citep{Roberts2017}.
-
+model \citep{Uppal2025, Soler2021}. 
 To obtain a realistic assessment of the model's predictive performance, we use block cross-validation,
 a strategy specifically designed for data with spatial or temporal dependence \citep{Roberts2017}.
 This method respects the spatial structure of the data by ensuring independence between training and
@@ -529,16 +537,13 @@ source studies on airborne data to guide the selection of optimal model paramete
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
 
-% \begin{figure}[tb]
-% \centering
-% \includegraphics[width=1\linewidth]{figures/grided-TFA-B.jpeg}
-% \caption{
-%   \lipsum[1]
-% }
-% \label{fig_synthetic_simple_data}
-% \end{figure}
+\subsection{Syntetic data}
 
-\lipsum[5-10]
+\lipsum[1-5]
+
+\subsection{Real data}
+
+\lipsum[1-5]
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
