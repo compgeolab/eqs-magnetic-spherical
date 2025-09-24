@@ -378,11 +378,13 @@ class EquivalentSourcesMagGeod:
         self,
         damping=None,
         depth=None,
+        block_size=None,
         inclination=90,
         declination=0,
         source_coordinates=None,
         ellipsoid=bl.WGS84,
     ):
+        self.block_size = block_size
         self.damping = damping
         self.depth = depth
         self.inclination = inclination
@@ -416,6 +418,28 @@ class EquivalentSourcesMagGeod:
         return 5 * bd.neighbor_distance_statistics(
             coordinates_cartesian, "median", k=10
         )
+    
+    def _build_points(self, coordinates):
+        if self.depth is None:
+            depth = self._estimate_depth(coordinates)
+        else:
+            depth = self.depth
+        depth = np.ones_like(coordinates[0])*depth
+        if self.block_size is not None:
+            reducer = vd.BlockReduce(
+                spacing=self.block_size, reduction="median", drop_coords=False
+            )
+            # Must pass a dummy data array to BlockReduce.filter(), we choose
+            # one of the coordinate arrays. We will ignore the returned reduced
+            # dummy array.
+            coordinates, depth = reducer.filter(coordinates, depth)
+        points = [
+            coordinates[0],
+            coordinates[1],
+            coordinates[2] - depth,
+        ]
+        return points
+
 
     def fit(self, coordinates, inclination, declination, data, weights=None):
         """ """
@@ -506,6 +530,7 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
         self,
         damping=None,
         depth=None,
+        block_size=None,
         inclination=90,
         declination=0,
         source_coordinates=None,
@@ -517,10 +542,13 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
         super().__init__(
             damping=damping,
             depth=depth,
+            block_size=block_size,
             inclination=inclination,
             declination=declination,
             source_coordinates=source_coordinates,
         )
+        
+        self.block_size = block_size
         self.window_size = window_size
         self.n_points_per_window = n_points_per_window
         self.random_seed = random_seed
@@ -537,14 +565,12 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
         else:
             self.depth_ = self.depth
         # If source coordinates aren't given, use the data coordinates
+
         if self.source_coordinates is None:
-            self.source_coordinates_ = (
-                coordinates[0].copy(),
-                coordinates[1].copy(),
-                coordinates[2] - self.depth_,
-            )
+            self.source_coordinates_ = self._build_points(coordinates)
         else:
             self.source_coordinates_ = self.source_coordinates
+
         n_data = coordinates[0].size
         n_params = self.source_coordinates_[0].size
         
