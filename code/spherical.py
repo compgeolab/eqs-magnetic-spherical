@@ -384,6 +384,7 @@ class EquivalentSourcesMagGeod:
         source_coordinates=None,
         ellipsoid=bl.WGS84,
     ):
+        self.block_size = block_size
         self.damping = damping
         self.depth = depth
         self.inclination = inclination
@@ -419,10 +420,8 @@ class EquivalentSourcesMagGeod:
         )
     
     def _build_points(self, coordinates):
-        """
-        """
         if self.depth is None:
-            depth = _estimate_depth(coordinates)
+            depth = self._estimate_depth(coordinates)
         else:
             depth = self.depth
         depth = np.ones_like(coordinates[0])*depth
