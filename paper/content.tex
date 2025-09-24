@@ -19,14 +19,7 @@ Most formulations of the equivalent sources inverse problem require the
 solution of dense linear systems, whose size is equal to or greater than the
 number of data.
 
-Airborne magnetic data are characterized by strong spatial autocorrelation, 
-with high data density along flight lines and large, un-sampled areas between them.
-This structure violates the assumption of data independence required by conventional
-random cross-validation.
-If used, random validation would lead to overly optimistic error estimates, 
-as the model would be tested on points geographically close to the training data, 
-failing to assess its true generalization capability 
-\citep{Roberts2017, Soler2021, Uppal2025}.
+
 
 Since modern airborne surveys generate large volumes of data, 
 solving the linear systems of the equivalent-layer technique becomes 
@@ -107,6 +100,16 @@ A recent refinement by \citet{Uppal2025} overcomes these issues by fitting the
 layers sequentially: the deep layer is fitted first to a block-averaged,
 long-wavelength version of the data, and the shallow layer is then fitted to
 the high-frequency residuals.
+
+Moreover, blabla bla crv, curva L, generalize crv, 
+Airborne magnetic data are characterized by strong spatial autocorrelation, 
+with high data density along flight lines and large, un-sampled areas between them.
+This structure violates the assumption of data independence required by conventional
+random cross-validation.
+If used, random validation would lead to overly optimistic error estimates, 
+as the model would be tested on points geographically close to the training data, 
+failing to assess its true generalization capability 
+\citep{Roberts2017, Soler2021, Uppal2025}.
 
 This work introduces a unified method that simultaneously addresses both the
 computational and geometric challenges inherent in large-scale magnetic data
