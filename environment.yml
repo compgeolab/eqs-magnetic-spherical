@@ -21,7 +21,7 @@ dependencies:
   - netcdf4
   - numba
   - pygmt
-  - gmt==6.4.*
+  - gmt
   - pyproj
   - rich
   - ipywidgets
