@@ -604,7 +604,7 @@ To demonstrate its performance, the entire workflow, encompassing the
 inversion and forward modeling of $507395$ observation points, was
 completed in under $120$ minutes. This was achieved on a personal computer
 with an Intel\textsuperscript{\textregistered} Core\textsuperscript{TM}
-i5-9300H CPU @ $2.40$ GHz (8 cores) and 16 GB of RAM. Such performance
+i5-9300H CPU @ $2.40$ GHz (8 cores) and $16$ GB of RAM. Such performance
 confirms the method's feasibility for large-scale surveys, overcoming a
 significant computational hurdle that has traditionally limited the 
 equivalent source technique.
@@ -623,7 +623,7 @@ realistic survey conditions, we applied the spherical dual-layer
 gradient-boosted equivalent sources to an aeromagnetic dataset covering the
 same region used in the synthetic experiments. In all tests presented in this
 section, the final prediction grid was constructed with a cell size of
-approximately $1 km$, establishing the reference spatial resolution
+approximately $1$ km, establishing the reference spatial resolution
 against which all block-mean decimations are evaluated. Introducing this
 scale at the outset is essential, since the grid ultimately defines the
 smallest wavelength that the inversion can express, and therefore constrains
@@ -638,14 +638,14 @@ artifacts aligned with the flight geometry.
 
 Before applying the inversion, the original survey underwent a preprocessing
 step designed to reduce redundancy and stabilize the forward modeling.
-Measurements were originally acquired at approximately $100 Hz$,
+Measurements were originally acquired at approximately $100$ Hz,
 producing extremely dense sampling along flight lines. To obtain a more
 uniform and manageable dataset, we applied a $100{:}1$ temporal decimation by
 averaging every 100 consecutive samples while preserving flight-line
 continuity. Numerical variables were averaged, whereas categorical fields
 (e.g., line identifiers) were retained from the central record of each block.
 Records containing corrupted or inconsistent values were discarded. This
-procedure effectively reduced the dataset to a $1 Hz$ survey while
+procedure effectively reduced the dataset to a $1$ Hz survey while
 preserving the essential spatial characteristics of the acquisition. The
 resulting dataset served as the input for the block-mean sensitivity tests
 presented below.
@@ -669,7 +669,7 @@ spatial averaging introduced by the block-mean operation.
 On the other hand, when very fine block-mean sizes are adopted, the results
 do not continue to improve indefinitely. The limiting factor becomes the
 resolution imposed by the final prediction grid. Once the block-mean size is
-comparable to, or smaller than, the grid-cell size ($\sim 1 km$), further
+comparable to, or smaller than, the grid-cell size ($\sim 1$ km), further
 refinement does not translate into additional resolved detail. At this scale,
 the inversion is effectively sampling the data at a resolution finer than
 what the grid can express, and the predicted fields remain essentially
@@ -696,7 +696,7 @@ regional to continental applications.
 \centering
 \includegraphics[width=1\linewidth]{figures/real_data_blockmean.png}
 \caption{Effect of varying block-mean size on the predicted total-field
-anomaly for the same region used in the synthetic experiments.
+anomaly for the same region used in the Paraná Basin ANP data.
 \textbf{a–d)} Observed total-field anomaly gridded from different
 block-mean decimations. \textbf{e–h)} Predicted total-field anomaly
 using the spherical dual-layer gradient-boosted equivalent sources. The
