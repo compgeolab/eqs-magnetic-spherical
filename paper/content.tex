@@ -499,37 +499,30 @@ model. This robust validation approach has been successfully applied in recent l
 source studies on airborne data to guide the selection of optimal model parameters \citep{Soler2021, Uppal2025}.
 
 \begin{algorithm}
-\caption{Hyperparameter selection using Block K-Fold Cross-Validation}
-\label{alg:block-cv}
-\begin{algorithmic}[1]
-    source studies on airborne data to guide the selection of optimal model parameters \citep{Soler2021, Uppal2025}.
-    
-    \begin{algorithm}
     \caption{Hyperparameter selection using Block K-Fold Cross-Validation}
     \label{alg:block-cv}
     \begin{algorithmic}[1]
     \State Partition the survey area into a set of $L$ non-overlapping spatial blocks.
-\State Partition the survey area into a set of $L$ non-overlapping spatial blocks.
-\State Randomly assign the blocks to $k$ folds $\{F_1, F_2, \dots, F_k\}$.
-\State Define a grid of candidate hyperparameter sets $\Theta$.
-\State Initialize `min\_score` = $\infty$.
-\For{each hyperparameter set $\theta$ in $\Theta$}
-    \State Initialize a list of fold scores, `scores`.
-    \For{$i = 1$ to $k$}
-        \State Set test set to data in blocks from fold $F_i$; training set to data from all other folds.
-        \State Fit model $\mathbf{m}_i$ on the training set using hyperparameters $\theta$.
-        \State Predict data $\mathbf{d}_{\text{pred}}$ on the coordinates of the test set.
-        \State Calculate score$_i$ (e.g., RMSE) and add it to `scores`.
+    \State Randomly assign the blocks to $k$ folds $\{F_1, F_2, \dots, F_k\}$.
+    \State Define a grid of candidate hyperparameter sets $\Theta$.
+    \State Initialize `min\_score` = $\infty$.
+    \For{each hyperparameter set $\theta$ in $\Theta$}
+        \State Initialize a list of fold scores, `scores`.
+        \For{$i = 1$ to $k$}
+            \State Set test set to data in blocks from fold $F_i$; training set to data from all other folds.
+            \State Fit model $\mathbf{m}_i$ on the training set using hyperparameters $\theta$.
+            \State Predict data $\mathbf{d}_{\text{pred}}$ on the coordinates of the test set.
+            \State Calculate score$_i$ (e.g., RMSE) and add it to `scores`.
+        \EndFor
+        \State `avg\_score` = mean of `scores`.
+        \If{`avg\_score` < `min\_score`}
+            \State `min\_score` = `avg\_score`.
+            \State $\theta^*$ = $\theta$.
+        \EndIf
     \EndFor
-    \State `avg\_score` = mean of `scores`.
-    \If{`avg\_score` < `min\_score`}
-        \State `min\_score` = `avg\_score`.
-        \State $\theta^*$ = $\theta$.
-    \EndIf
-\EndFor
-\State The optimal hyperparameter set is $\theta^*$.
-\end{algorithmic}
-\end{algorithm}
+    \State The optimal hyperparameter set is $\theta^*$.
+    \end{algorithmic}
+    \end{algorithm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
@@ -714,7 +707,7 @@ sampling-density variations.}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusion}
+\section{Conclusions}
 
 In this work, we developed and validated a spherical equivalent source
 method that integrates gradient-boosting and dual-layer modeling for the
