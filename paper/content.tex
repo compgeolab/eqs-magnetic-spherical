@@ -499,30 +499,30 @@ model. This robust validation approach has been successfully applied in recent l
 source studies on airborne data to guide the selection of optimal model parameters \citep{Soler2021, Uppal2025}.
 
 \begin{algorithm}
-\caption{Hyperparameter selection using Block K-Fold Cross-Validation}
-\label{alg:block-cv}
-\begin{algorithmic}[1]
-\State Partition the survey area into a set of $L$ non-overlapping spatial blocks.
-\State Randomly assign the blocks to $k$ folds $\{F_1, F_2, \dots, F_k\}$.
-\State Define a grid of candidate hyperparameter sets $\Theta$.
-\State Initialize `min\_score` = $\infty$.
-\For{each hyperparameter set $\theta$ in $\Theta$}
-    \State Initialize a list of fold scores, `scores`.
-    \For{$i = 1$ to $k$}
-        \State Set test set to data in blocks from fold $F_i$; training set to data from all other folds.
-        \State Fit model $\mathbf{m}_i$ on the training set using hyperparameters $\theta$.
-        \State Predict data $\mathbf{d}_{\text{pred}}$ on the coordinates of the test set.
-        \State Calculate score$_i$ (e.g., RMSE) and add it to `scores`.
+    \caption{Hyperparameter selection using Block K-Fold Cross-Validation}
+    \label{alg:block-cv}
+    \begin{algorithmic}[1]
+    \State Partition the survey area into a set of $L$ non-overlapping spatial blocks.
+    \State Randomly assign the blocks to $k$ folds $\{F_1, F_2, \dots, F_k\}$.
+    \State Define a grid of candidate hyperparameter sets $\Theta$.
+    \State Initialize `min\_score` = $\infty$.
+    \For{each hyperparameter set $\theta$ in $\Theta$}
+        \State Initialize a list of fold scores, `scores`.
+        \For{$i = 1$ to $k$}
+            \State Set test set to data in blocks from fold $F_i$; training set to data from all other folds.
+            \State Fit model $\mathbf{m}_i$ on the training set using hyperparameters $\theta$.
+            \State Predict data $\mathbf{d}_{\text{pred}}$ on the coordinates of the test set.
+            \State Calculate score$_i$ (e.g., RMSE) and add it to `scores`.
+        \EndFor
+        \State `avg\_score` = mean of `scores`.
+        \If{`avg\_score` < `min\_score`}
+            \State `min\_score` = `avg\_score`.
+            \State $\theta^*$ = $\theta$.
+        \EndIf
     \EndFor
-    \State `avg\_score` = mean of `scores`.
-    \If{`avg\_score` < `min\_score`}
-        \State `min\_score` = `avg\_score`.
-        \State $\theta^*$ = $\theta$.
-    \EndIf
-\EndFor
-\State The optimal hyperparameter set is $\theta^*$.
-\end{algorithmic}
-\end{algorithm}
+    \State The optimal hyperparameter set is $\theta^*$.
+    \end{algorithmic}
+    \end{algorithm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
@@ -707,9 +707,60 @@ sampling-density variations.}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusion}
+\section{Conclusions}
 
-\lipsum[1-5]
+In this work, we developed and validated a spherical equivalent source
+method that integrates gradient-boosting and dual-layer modeling for the
+efficient processing of large-scale aeromagnetic datasets. By extending
+recent advances in windowed inversion and multi-depth source
+decomposition to a spherical framework, the proposed methodology
+simultaneously addresses the geometric distortions inherent to
+Cartesian approaches and the computational limitations of traditional
+global inversions.
+
+A complete physical formulation for magnetic dipole fields in spherical
+coordinates was implemented, including rigorous transformations
+between geodetic and geocentric reference systems. The identification
+and correction of inconsistencies in existing kernel expressions
+further improved the reliability of the forward modeling. These
+developments provide a robust foundation for accurate vector-field
+reconstruction on regional to continental scales.
+
+The integration of gradient boosting with an equal-area spherical
+tessellation enabled the inversion to be decomposed into a sequence of
+localized problems, drastically reducing memory requirements and
+computational cost. Synthetic experiments demonstrated that this
+strategy preserves inversion accuracy while allowing the processing of
+hundreds of thousands of observations on standard computing hardware.
+The dual-layer configuration proved essential for separating
+long-wavelength regional signals from short-wavelength crustal
+anomalies, yielding stable solutions with low residuals and minimal
+border artifacts.
+
+Results from synthetic tests confirmed that the method successfully
+reconstructs both total-field anomalies and full magnetic vector
+components from total-field data alone. The low-magnitude, spatially
+uncorrelated residuals indicate that the proposed approach effectively
+captures multi-scale magnetic signals. These results highlight the
+advantages of sequential deep–shallow modeling over conventional
+single-layer formulations.
+
+Applications to real aeromagnetic data further demonstrated the
+robustness of the methodology under realistic survey conditions.
+Systematic experiments with block-mean decimation revealed that the
+effective resolution of the inversion is primarily controlled by the
+final prediction grid. Once the sampling density approaches this scale,
+finer data no longer improve the recovered field. This finding supports
+the use of moderate decimation as a practical strategy for reducing
+computational cost without sacrificing interpretability in large-scale
+studies.
+
+Overall, the proposed spherical dual-layer gradient-boosted equivalent
+source framework provides an efficient and geometrically consistent
+solution for regional and continental magnetic field modeling. It
+enables scalable interpolation, continuation, and vector-field recovery
+from heterogeneous airborne surveys, overcoming key limitations of
+previous Cartesian and global inversion approaches.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
