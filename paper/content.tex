@@ -727,15 +727,15 @@ patterns.
 We further analyzed the predicted magnetic field components and their combined
 magnitude. Figure~\ref{fig_real_components} illustrates the spatial
 distribution of the eastward ($B_E$), northward ($B_N$), and upward ($B_U$)
-components, together with the total-field norm.
+components, together with the field amplitude.
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=1\linewidth]{figures/real-data-tfa-norm-bcomponents.jpeg}
-\caption{Predicted magnetic field components and total-field norm.
+\caption{Predicted magnetic field components and field amplitude.
 \textbf{a)} Survey coverage and observation points.
 \textbf{b)} Total-field anomaly.
-\textbf{c)} Field norm.
+\textbf{c)} Field amplitude.
 \textbf{d--f)} Eastward ($B_E$), northward ($B_N$), and upward ($B_U$) components,
 respectively.}
 \label{fig_real_components}
@@ -749,7 +749,7 @@ also clearly expressed in the individual components, confirming that the
 inversion recovers physically meaningful vector fields and does not rely solely
 on scalar fitting.
 
-The norm of the predicted magnetic field highlights zones of enhanced magnetic
+The amplitude of the predicted magnetic field highlights zones of enhanced magnetic
 intensity and correlates well with major structural domains and high-amplitude
 anomaly belts. These features are consistent with known tectonic and lithologic
 boundaries in the study area, reinforcing the geological plausibility of the
@@ -761,29 +761,29 @@ consistent method for modeling large and heterogeneous aeromagnetic
 datasets. The method is robust with respect to sampling density, enables a
 meaningful separation of deep and shallow sources, and yields reliable
 reconstructions of both scalar and vector magnetic fields, making it well
-suited
-for regional to continental-scale applications.
+suited for regional to continental-scale applications.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions}
 
-In this work, we developed and validated a spherical equivalent source
-method that integrates gradient-boosting and dual-layer modeling for the
+In this work, we developed and validated a spherical equivalent sources
+method that integrates gradient boosting and dual-layer modeling for the
 efficient processing of large-scale aeromagnetic datasets. By extending
-recent advances in windowed inversion and multi-depth source
-decomposition to a spherical methods, the proposed methodology
+recent advances in windowed inversion \citep{Soler2021} and multi-depth source
+decomposition \citep{Uppal2025} to a spherical method, the proposed methodology
 simultaneously addresses the geometric distortions inherent to
 Cartesian approaches and the computational limitations of traditional
-global inversions.
+equivalent sources inversions.
 
 A complete physical formulation for magnetic dipole fields in spherical
 coordinates was implemented, including rigorous transformations
 between geodetic and geocentric reference systems. The identification
 and correction of inconsistencies in existing kernel expressions
-further improved the reliability of the forward modeling. These
-developments provide a robust foundation for accurate vector-field
-reconstruction on regional to continental scales.
+further improved the reliability of the forward modeling. Together,
+these developments provide a theoretical and numerical
+foundation for accurate vector-field reconstruction on regional to
+continental scales.
 
 The integration of gradient boosting with an equal-area spherical
 tessellation enabled the inversion to be decomposed into a sequence of
@@ -801,7 +801,7 @@ reconstructs both total-field anomalies and full magnetic vector
 components from total-field data alone. The low-magnitude, spatially
 uncorrelated residuals indicate that the proposed approach effectively
 captures multi-scale magnetic signals. These results highlight the
-advantages of sequential deep–shallow modeling over conventional
+advantages of sequential deep--shallow modeling over conventional
 single-layer formulations.
 
 Applications to real aeromagnetic data further demonstrated the
@@ -815,24 +815,38 @@ computational cost without sacrificing interpretability in large-scale
 studies.
 
 Overall, the proposed spherical dual-layer gradient-boosted equivalent
-source method provides an efficient and geometrically consistent
-solution for regional and continental magnetic field modeling. It
-enables scalable interpolation, continuation, and vector-field recovery
-from heterogeneous airborne surveys, overcoming key limitations of
-previous Cartesian and global inversion approaches.
-
+source method provides an efficient, scalable, and geometrically
+consistent solution for regional and continental magnetic field
+modeling. It enables reliable interpolation, continuation, and
+vector-field recovery from heterogeneous airborne surveys, overcoming
+key limitations of previous Cartesian and global inversion approaches.
+This framework opens new perspectives for large-scale magnetic data
+integration and provides a solid basis for future developments in
+spherical potential-field modeling.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Open research}
 
-The Python source code used to produce all results and figures presented here
-is available at \url{https://github.com/\GitHubRepository} and
+
+The Python source code used to produce all results and figures presented in this
+study is available at \url{https://github.com/\GitHubRepository} and
 \url{https://doi.org/\ArchiveDOI} under the MIT open-source license.
 
-Here we should cite all of the main software used, like Jupyter, numpy, scipy,
-matplotlib, Fatiando, etc.
+This research made use of the following open-source scientific software:
+NumPy \citep{NumPy} for numerical computing and linear algebra,
+SciPy \citep{SciPy} for scientific computing,
+Matplotlib \citep{} and PyGMT \citep{PyGMT} for visualization and map
+generation, Pandas \citep{Pandas} for tabular data handling,
+Xarray \citep{Xarray} for working with gridded datasets,
+Verde \citep{Verde} for spatial interpolation and moving-window analysis, and
+Harmonica \citep{Harmonica} for potential field data
+processing and modelling. Jupyter Notebooks were used for code development,
+documentation, and reproducibility.
 
-Cite any data sources as well.
+The aeromagnetic data used in this study are publicly available from the
+Brazilian National Agency of Petroleum, Natural Gas and Biofuels (ANP) and the
+Geological Survey of Brazil (CPRM) through the REATE platform at
+\url{https://reate.cprm.gov.br/anp/TERRESTRE}.
 
 
 
