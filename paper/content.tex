@@ -666,8 +666,8 @@ magnetic modeling.
 
 Before the modeling procedure, the dataset was preprocessed to improve
 its consistency and numerical stability. Block-mean decimation was
-applied to reduce data redundancy and mitigate the effects of uneven
-sampling density. In addition, tie lines were removed from the dataset
+applied to reduce the dataset size and mitigate the effects of supersampling. 
+In addition, tie lines were removed from the dataset
 due to amplitude inconsistencies that introduce spurious variations in
 the magnetic signal and systematic distortions, which could negatively
 affect the equivalent sources modeling.
@@ -710,14 +710,14 @@ capturing multiscale geological structures.
 The quality of the final magnetic field prediction was assessed by
 analyzing the total-field anomaly and its vector components. Figure~
 \ref{fig_real_components} shows the predicted total-field anomaly and
-the three magnetic field components in the local reference frame.
+the three magnetic field components.
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=1\linewidth]{figures/real-data-tfa-norm-bcomponents.jpeg}
 \caption{Predicted magnetic field for the Paraná Basin dataset.
 (\textbf{a}) Total-field anomaly. (\textbf{b--d}) East, north, and upward
-components of the magnetic field in the local reference frame. The
+components of the magnetic field. The
 smooth spatial behavior and coherence between components indicate the
 numerical stability of the proposed modeling approach.}
 \label{fig_real_components}
@@ -742,8 +742,8 @@ continental-scale magnetic data integration and processing.
 In this work, we developed and validated a spherical equivalent sources
 method that integrates gradient boosting and dual-layer modeling for the
 efficient processing of large-scale aeromagnetic datasets. By extending
-recent advances in windowed inversion \citep{Soler2021} and multi-depth source
-decomposition \citep{Uppal2025} to a spherical method, the proposed methodology
+recent advances in windowed inversion \citep{Soler2021} and dual layer equivalent
+sources decomposition \citep{Uppal2025} to a spherical method, the proposed methodology
 simultaneously addresses the geometric distortions inherent to
 Cartesian approaches and the computational limitations of traditional
 equivalent sources inversions.
