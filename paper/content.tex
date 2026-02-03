@@ -532,89 +532,129 @@ source studies on airborne data to guide the selection of optimal model paramete
 To evaluate the performance and accuracy of the proposed methodology, we
 applied it to a synthetic magnetic dataset. This dataset was designed to
 simulate real-world conditions, incorporating a variety of crustal sources
-with different shapes, sizes, depths, and magnetizations. A complex
-regional field was modeled using a deep pattern of sources, to
-which a zero-mean Gaussian noise was added to simulate instrument and
-environmental noise. To replicate a realistic survey geometry, the magnetic
-field was sampled along the flight lines of an aeromagnetic survey from the
-Paraná Basin. The original dataset, provided by ANP and available through
-the CPRM/REATE portal, was preprocessed using a block-reduce operation,
-resulting in $507395$ points whose coordinates were used for the simulation.
+with different shapes, sizes, depths, and magnetizations. A complex regional
+field was modeled using a deep pattern of sources, to which a zero-mean
+Gaussian noise was added to simulate instrument and environmental noise. To
+replicate a realistic survey geometry, the magnetic field was sampled along
+the flight lines of an aeromagnetic survey from the Paraná Basin. The
+original dataset, provided by ANP and available through the CPRM/REATE
+portal, was preprocessed using a block-reduce operation, resulting in
+$507,395$ points whose coordinates were used for the simulation.
 
-The core of the methodology lies in its dual-layer approach, which is
-illustrated in Figure~\ref{fig_decomposition}. This process separates the
-observed total-field anomaly (Figure~\ref{fig_decomposition}a) into two
-distinct components. First, a deep layer is fitted to a block-averaged
-version of the data to isolate long-wavelength signals. This strategy
-effectively models the smooth regional field (Figure~\ref{fig_decomposition}b)
-while reducing the required number of sources without sacrificing quality
-\citep{Uppal2025}. Subsequently, theiterative gradient-boosting algorithm 
-is used to fit a shallower layer of sources to the remaining residual signal. 
-This second layer models the short-wavelength anomalies associated with local sources
-(Figure~\ref{fig_decomposition}c). The effectiveness of this decomposition is
-evident, as the final residuals (Figure~\ref{fig_decomposition}d) are
-significantly smaller than those from the deep layer alone
-(Figure~\ref{fig_decomposition}e).
+The predicted fields were interpolated onto a regular grid with a spatial
+resolution of $1$~km. The resulting grid is defined in latitude, longitude,
+and height, with a shape of $(3, 1223, 1057)$, corresponding to the height
+dimension and the horizontal latitude--longitude grid. This grid contains a
+total of $3,878,133$ points and was used for visualization and
+quantitative assessment of the model performance.
+
+Before performing the dual-layer inversion, a block K-fold cross-validation
+strategy was employed to determine the optimal hyperparameters for both
+layers of the model. For the deep layer (Figure~\ref{fig_crossvalidation}a), the lowest RMSE is
+obtained for a relative depth of approximately $37$~km and a damping value of
+about $10^{0}$. This region of minimum error is relatively broad, indicating
+a stable solution with limited sensitivity to small variations in the
+hyperparameters. The optimal depth is consistent with the expected scale of
+the regional magnetic field and confirms that the deep layer effectively
+captures the long-wavelength components of the anomaly.
+
+
+For the shallow layer (Figure~\ref{fig_crossvalidation}b), the minimum RMSE is
+reached at a relative depth of approximately $9$~km and a damping value of
+about $10^{6}$. In this case, the RMSE minimum is more localized in the
+hyperparameter space, reflecting the increased sensitivity of the shallow
+layer to parameter variations. This behavior is expected for near-surface
+sources, which generate short-wavelength anomalies and require stronger
+regularization to prevent overfitting.
+
+The contrast between the optimal depths obtained for the deep and shallow
+layers highlights the multi-scale nature of the magnetic sources in the study
+area. The deeper sources primarily control the long-wavelength regional
+field, whereas the shallower sources account for localized anomalies. The
+consistent location of the RMSE minima in the hyperparameter space further
+demonstrates the robustness of the cross-validation procedure and supports
+the reliability of the selected model configuration.
+
+Using the hyperparameters selected by cross-validation, the dual-layer
+inversion was then performed. The core of the methodology lies in its
+dual-layer approach, which is illustrated in
+Figure~\ref{fig_decomposition}. This process separates the observed
+total-field anomaly (Figure~\ref{fig_decomposition}a) into two distinct
+components. First, a deep layer is fitted to a block-averaged version of the
+data to isolate long-wavelength signals. This strategy effectively models
+the smooth regional field (Figure~\ref{fig_decomposition}b) while reducing
+the required number of sources without sacrificing quality
+\citep{Uppal2025}. Subsequently, the iterative gradient-boosting algorithm is
+used to fit a shallower layer of sources to the remaining residual signal.
+This second layer models the short-wavelength anomalies associated with
+local sources (Figure~\ref{fig_decomposition}c). The effectiveness of this
+decomposition is evident, as the final residuals
+(Figure~\ref{fig_decomposition}d) are significantly smaller than those from
+the deep layer alone (Figure~\ref{fig_decomposition}e).
 
 \begin{figure}[htb]
     \centering
     \includegraphics[width=1\linewidth]{figures/points-TFA-deep-shallow.jpeg}
     \caption{Illustration of the dual-layer decomposition process.
         \textbf{a)} True total-field anomaly.
-        \textbf{b)} Deep total-field anomaly, capturing the long-wavelength regional field.
-        \textbf{c)} Shallow total-field anomaly, capturing the short-wavelength local anomalies.
+        \textbf{b)} Deep total-field anomaly, capturing the long-wavelength
+        regional field.
+        \textbf{c)} Shallow total-field anomaly, capturing the short-wavelength
+        local anomalies.
         \textbf{d)} Final residuals after combining both layers.
         \textbf{e)} Residuals of the deep layer.
         \textbf{f)} Residuals of the shallow layer.}
     \label{fig_decomposition}
 \end{figure}
 
-The final gridded predictions, shown in Figure~\ref{fig_grid_results}, confirm
-the accuracy of the dual-layer model. By combining the effects of both
-source layers, the method accurately reconstructs not only the total-field
-anomaly but also its eastward (Be), northward (Bn), and upward (Bu)
-components. There is a correspondence between the
-predicted fields (Figure~\ref{fig_grid_results}a-d) and the true synthetic
-fields (Figure~\ref{fig_grid_results}e-h). The quality of the inversion is
-further highlighted by the final residual maps
+The final gridded predictions, shown in Figure~\ref{fig_grid_results},
+confirm the accuracy of the dual-layer model. By combining the effects of
+both source layers, the method accurately reconstructs not only the
+total-field anomaly but also its eastward (Be), northward (Bn), and upward
+(Bu) components. There is a correspondence between the predicted fields
+(Figure~\ref{fig_grid_results}a-d) and the true synthetic fields
+(Figure~\ref{fig_grid_results}e-h). The quality of the inversion is further
+highlighted by the final residual maps
 (Figure~\ref{fig_grid_results}i-l), where the low magnitude and lack of
-coherent structures demonstrate that the model has successfully captured the
-underlying geophysical signals. This represents a significant improvement
-over single-layer approaches, which often struggle with multi-scale sources
-and suffer from artifacts at the survey borders \citep{Uppal2025}.
+coherent structures demonstrate that the model has successfully captured
+the underlying geophysical signals. This represents a significant
+improvement over single-layer approaches, which often struggle with
+multi-scale sources and suffer from artifacts at the survey borders
+\citep{Uppal2025}.
 
 \begin{figure}[htb]
     \centering
     \includegraphics[width=1\linewidth]{figures/grided-TFA-B.jpeg}
-    \caption{Gridded interpolation results for the total-field anomaly and its vector components (Be, Bn, Bu).
-        The first row \textbf{(a-d)} shows the fields predicted ("Predicted") by the dual-layer model.
-        The second row \textbf{(e-h)} shows the true synthetic fields ("True") for comparison.
+    \caption{Gridded interpolation results for the total-field anomaly and its
+        vector components (Be, Bn, Bu). The first row \textbf{(a-d)} shows the
+        fields predicted ("Predicted") by the dual-layer model. The second row
+        \textbf{(e-h)} shows the true synthetic fields ("True") for comparison.
         The third row \textbf{(i-l)} shows the final residuals ("Residuals"),
-        corresponding to the difference between the true and predicted fields, 
-        demonstrating the accuracy of the inversion.}
+        corresponding to the difference between the true and predicted
+        fields, demonstrating the accuracy of the inversion.}
     \label{fig_grid_results}
 \end{figure}
 
 The computational efficiency of the method is significantly enhanced by the
-use of the gradient-boosting algorithm, making it highly applicable to
-large datasets. As described by \citet{Soler2021}, this technique
-prevent the need to solve a single, massive linear system by
-iteratively processing the data in smaller, overlapping windows.
-To demonstrate its performance, the entire workflow, encompassing the
-inversion and forward modeling of $507395$ observation points, was
-completed in under $120$ minutes. This was achieved on a personal computer
-with an Intel\textsuperscript{\textregistered} Core\textsuperscript{TM}
-i5-9300H CPU @ $2.40$ GHz (8 cores) and $16$ GB of RAM. Such performance
-confirms the method's feasibility for large-scale surveys, overcoming a
-significant computational hurdle that has traditionally limited the 
-equivalent source technique.
+use of the gradient-boosting algorithm, making it highly applicable to large
+datasets. As described by \citet{Soler2021}, this technique prevents the need
+to solve a single, massive linear system by iteratively processing the data
+in smaller, overlapping windows. To demonstrate its performance, the entire
+workflow, encompassing the inversion and forward modeling of $507{,}395$
+observation points, was completed in under $120$ minutes. This was achieved
+on a personal computer with an Intel\textsuperscript{\textregistered}
+Core\textsuperscript{TM} i5-9300H CPU @ $2.40$~GHz (8 cores) and $16$~GB of RAM.
+Such performance confirms the method's feasibility for large-scale surveys,
+overcoming a significant computational hurdle that has traditionally
+limited the equivalent source technique.
 
 The low residuals observed in the final results
-(Figure~\ref{fig_grid_results}i-l) provide a good fit and strong evidence
-of the method's excellent predictive capabilities. Overall, the tests with
-synthetic data show that the proposed dual-layer approach is efficient for 
-predicting both the components of the field and the anomalous magnetic
-field based solely on total-field anomaly data \citep{Uppal2025}.
+(Figure~\ref{fig_grid_results}i-l) provide a good fit and strong evidence of
+the method's excellent predictive capabilities. Overall, the tests with
+synthetic data show that the proposed dual-layer approach is efficient for
+predicting both the components of the field and the anomalous magnetic field
+based solely on total-field anomaly data \citep{Uppal2025}.
+
 
 \subsection{Real Data Application}
 
@@ -667,23 +707,6 @@ to a dense set of equivalent sources distributed at two depth levels.
 This configuration allows the simultaneous representation of shallow
 and deep magnetic sources, improving the flexibility of the model in
 capturing multiscale geological structures.
-
-Figure~\ref{fig_real_sources} presents the spatial distribution of the
-equivalent sources and their contribution to the predicted field. The
-shallow layer mainly captures short-wavelength anomalies associated
-with near-surface geological features, while the deeper layer accounts
-for long-wavelength components related to deeper crustal structures.
-
-\begin{figure}[htb]
-\centering
-\includegraphics[width=1\linewidth]{figures/points-TFA-deep-shallow.jpeg}
-\caption{Spatial distribution of the equivalent sources and their
-contributions to the predicted total-field anomaly. The shallow layer
-primarily represents short-wavelength features, whereas the deeper
-layer captures long-wavelength components associated with deeper
-geological structures.}
-\label{fig_real_sources}
-\end{figure}
 
 The quality of the final magnetic field prediction was assessed by
 analyzing the total-field anomaly and its vector components. Figure~
