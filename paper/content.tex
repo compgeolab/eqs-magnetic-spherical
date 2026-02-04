@@ -711,6 +711,19 @@ proposed methodology for large-scale magnetic datasets.
     \label{fig_real_blockmean}
 \end{figure}
 
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/v_real_00023.png}
+    \caption{Block K-fold cross-validation results for the real dataset.
+    \textbf{a)} RMSE as a function of damping and relative depth for the deep
+    equivalent sources layer, computed using the block-reduced dataset.
+    \textbf{b)} RMSE obtained for the shallow layer using a cropped subset of
+    the residual data. White stars indicate the selected optimal
+    hyperparameter combinations corresponding to the minimum RMSE in each
+    panel.}
+    \label{fig_real_crossvalidation}
+\end{figure}
+
 \begin{figure}[tb]
     \centering
     \includegraphics[width=1\linewidth]{figures/real-data-tfa-norm-bcomponents.jpeg}
@@ -722,59 +735,107 @@ proposed methodology for large-scale magnetic datasets.
     \label{fig_real_components}
 \end{figure}
 
-To evaluate the performance of the proposed spherical dual-layer
-gradient-boosted equivalent sources method under realistic conditions,
-we applied it to airborne magnetic data from the Paraná Basin, Brazil.
-This dataset was selected due to its large spatial coverage and complex
-geological setting, which provide a suitable testbed for regional-scale
-magnetic modeling.
-
-Before the modeling procedure, the dataset was preprocessed to improve
-its consistency and numerical stability. Block-mean decimation was
-applied to reduce the dataset size and mitigate the effects of supersampling.
-In addition, tie lines were removed from the dataset
-due to amplitude inconsistencies that introduce spurious variations in
-the magnetic signal and systematic distortions, which could negatively
-affect the equivalent sources modeling.
+To evaluate the performance of the proposed methodology under realistic
+conditions, it was applied to airborne magnetic data acquired over the Paraná
+Basin, Brazil. The survey covers latitudes from $-24.14^{\circ}$ to
+$-14.14^{\circ}$ and longitudes from $-56.44^{\circ}$ to $-46.96^{\circ}$,
+encompassing one of the largest sedimentary basins in South America.
+Data acquisition was conducted along north--south flight lines spaced
+approximately 6~km apart, with east--west control lines every 18~km, at an
+average altitude of 1800~m. Horizontal and vertical positioning were obtained
+using GPS, ensuring high positional accuracy. The dataset was originally
+referenced to the SAD-69 datum and subsequently converted to WGS-84 using
+official transformation parameters.
+The original raw data were sampled at 100~Hz and subsequently decimated to 1~Hz by averaging consecutive groups of
+100 samples along each flight line. Numerical variables were averaged, while
+categorical and identifier fields were retained from the central record of
+each block. Records containing corrupted or inconsistent values were
+discarded. This procedure preserves along-line continuity while
+significantly reducing the dataset size, in addition, tie lines were removed because they exhibited corrupted and
+inconsistent amplitude values, introducing spurious variations and systematic
+distortions in the magnetic signal that could negatively affect the equivalent
+sources modeling.
 
 To investigate the sensitivity of the method to variations in sampling
-density, different block-mean sizes were applied to generate multiple
-gridded datasets. Figure~\ref{fig_real_blockmean} illustrates the effect
-of varying block-mean sizes on the observed and predicted total-field
-anomalies. Panels \textbf{a--d} show the observed total-field anomaly
-gridded using progressively finer block sizes, while panels
-\textbf{e--h} present the corresponding predicted anomalies obtained
-using the spherical dual-layer gradient-boosted equivalent sources.
+density and spatial resolution, three spatial decimation strategies were
+tested, including block-mean spacings of $0.06^{\circ}$ (approximately 6.6~km),
+$0.0023^{\circ}$ (approximately 250~m), and the complete dataset without
+decimation. The latter was used to generate a final grid with 250~m
+resolution.
+For all decimation levels, a consistent multiscale processing strategy was
+adopted. Spatial blocks of $0.45^{\circ}$ (approximately 50~km) were used for cross-validation
+and parameter tuning of the deep layer, ensuring independence at regional
+scales. For the shallow layer, block sizes of $0.18^{\circ}$ (approximately 20~km) were
+employed to preserve local spatial variability while avoiding spatial
+overfitting. In addition, a moving window with a width of $1.5^{\circ}$ was
+used in the gradient-boosting procedure to control the spatial influence of
+each iteration and ensure stable convergence.
+This unified configuration allows a direct assessment of the robustness of
+the proposed methodology with respect to data density, while maintaining
+consistent regularization and spatial constraints across all experiments.
+The observed and predicted grids obtained from the different decimation
+strategies are shown in Figure~\ref{fig_real_blockmean}. As the block size
+decreases and approaches the target grid resolution, the predicted magnetic
+fields exhibit progressive convergence, indicating robustness with respect
+to sampling density and spatial resolution.
 
-The progressive convergence observed in the predicted grids as the block
-size decreases indicates that the proposed method is robust to changes
-in data resolution and sampling density. Even for coarser decimations,
-the main magnetic features are consistently recovered, demonstrating
-the stability of the inversion procedure.
+Based on this analysis, the block spacing of $0.0023^{\circ}$ was selected as a
+compromise between computational efficiency and spatial resolution. This
+dataset was subsequently used for the full application of the dual-layer
+methodology. From this stage onward, the processing workflow was identical to
+that adopted for the synthetic dataset.
+The deep layer was estimated from a block-reduced version of the selected
+dataset using a spacing of $0.1^{\circ}$, corresponding to approximately
+11~km. Cross-validation blocks with characteristic dimensions of
+approximately 50~km were adopted in order to isolate long-wavelength magnetic
+components and preserve spatial independence.
+The hyperparameters of the deep layer were selected through a block K-fold
+cross-validation procedure applied to the block-reduced dataset. The tested
+parameter space comprised damping values of 1, 100, and 10,000 and source
+depths of 70~km, 100~km, and 130~km, resulting in nine parameter combinations.
+The cross-validation results are shown in
+Figure~\ref{fig_real_crossvalidation}a. The minimum RMSE was obtained for a
+relative depth of approximately 100~km and a damping value of 100. The error
+surface exhibits a relatively broad minimum, indicating limited sensitivity
+to moderate hyperparameter variations.
+Using the selected configuration, the deep-layer inversion was performed
+using the entire block-reduced dataset. The predicted deep-layer field was
+interpolated back onto the full observation coordinates, and the residuals
+between the original data and the deep-layer prediction were computed. These
+residuals constitute the input for the shallow-layer inversion.
 
-After defining the optimal decimation parameters, the method was applied
-to a dense set of equivalent sources distributed at two depth levels.
-This configuration allows the simultaneous representation of shallow
-and deep magnetic sources, improving the flexibility of the model in
-capturing multiscale geological structures.
+The shallow layer was estimated using an iterative gradient-boosting
+algorithm applied to the deep-layer residuals. A moving window with a width of
+$1.5^{\circ}$ was adopted to control the spatial influence of each boosting
+iteration and ensure smooth convergence.
+Due to the large number of observations, cross-validation on the entire
+residual dataset would be computationally prohibitive. Therefore, a
+representative subset was selected for hyperparameter tuning by cropping the
+residual data to the region bounded by longitudes $-54^{\circ}$ to
+$-50^{\circ}$ and latitudes $-18^{\circ}$ to $-16^{\circ}$.
+A block K-fold cross-validation was applied to this subset using spatial
+blocks of approximately 20~km. The tested hyperparameters comprised damping
+values of $10^{2}$, $10^{4}$, and $10^{6}$ and source depths of 6~km, 9~km, and
+12~km, resulting in nine parameter combinations.
+The cross-validation results are shown in
+Figure~\ref{fig_real_crossvalidation}b. The minimum RMSE was obtained for the
+optimal shallow-layer configuration, highlighting the increased sensitivity
+of near-surface sources to parameter variations and the need for appropriate
+regularization.
 
-The quality of the final magnetic field prediction was assessed by
-analyzing the total-field anomaly and its vector components. Figure~
-\ref{fig_real_components} shows the predicted total-field anomaly and
-the three magnetic field components.
+The selected parameters were then applied to invert the full residual
+dataset, producing the shallow-layer model. The final residuals, obtained
+after combining the deep and shallow predictions, exhibit low amplitudes and
+lack coherent spatial structures.
 
-The predicted total-field anomaly reproduces the main regional magnetic
-trends observed in the original data, while preserving important
-short-wavelength features. The consistency between the vector
-components further indicates that the spherical dual-layer
-gradient-boosted equivalent sources method provides a physically
-coherent representation of the magnetic field.
+The estimated deep and shallow layers were used to predict the magnetic field
+onto a regular grid with a spatial resolution of 250~m and constant height of
+500~m.
 
-Overall, the real data application demonstrates that the proposed
-approach is robust to sampling-density variations, capable of handling
-large-scale datasets, and effective in modeling multiscale magnetic
-anomalies. These results confirm its suitability for regional and
-continental-scale magnetic data integration and processing.
+In addition to the total-field anomaly, the eastward ($B_E$),
+northward ($B_N$), and upward ($B_U$) components were also predicted Figure~\ref{fig_real_components}.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions}
