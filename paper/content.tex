@@ -19,39 +19,39 @@ Most formulations of the equivalent sources inverse problem require the
 solution of dense linear systems, whose size is equal to or greater than the
 number of data.
 
-Since modern airborne surveys generate large volumes of data, 
-solving the linear systems of the equivalent-layer technique becomes 
-demanding in terms of both processing time and memory 
-\citep{OliveiraJunior2023}. To improve computational efficiency, 
-several strategies have been developed. These include methods 
-based on moving data windows \citep{Leao1989,Soler2021,Uppal2025}, 
-column- and row-action updates \citep{Cordell1992,Mendonca1994,Guspi2009}, 
-reparametrization of the equivalent layer \citep{OliveiraJr2013,Mendonca2020}, 
-sparsity-inducing transformations using wavelets and quadtree discretization 
-\citep{Li2010,Barnes2011}, iterative methods using the full sensitivity matrix 
-\citep{Xia1991,Xia1993,Siqueira2017,Jirigalatu2019}, and iterative or direct 
-deconvolution exploiting Block-Toeplitz Toeplitz-block (BTTB) structures 
+Since modern airborne surveys generate large volumes of data,
+solving the linear systems of the equivalent-layer technique becomes
+demanding in terms of both processing time and memory
+\citep{OliveiraJunior2023}. To improve computational efficiency,
+several strategies have been developed. These include methods
+based on moving data windows \citep{Leao1989,Soler2021,Uppal2025},
+column- and row-action updates \citep{Cordell1992,Mendonca1994,Guspi2009},
+reparametrization of the equivalent layer \citep{OliveiraJr2013,Mendonca2020},
+sparsity-inducing transformations using wavelets and quadtree discretization
+\citep{Li2010,Barnes2011}, iterative methods using the full sensitivity matrix
+\citep{Xia1991,Xia1993,Siqueira2017,Jirigalatu2019}, and iterative or direct
+deconvolution exploiting Block-Toeplitz Toeplitz-block (BTTB) structures
 \citep{Takahashi2020,Takahashi2022}.
 
-Most equivalent source approaches have been traditionally formulated in Cartesian 
-coordinates, which are adequate for local studies but become increasingly distorted 
+Most equivalent source approaches have been traditionally formulated in Cartesian
+coordinates, which are adequate for local studies but become increasingly distorted
 when applied to regional or continental scales.
 As the survey area increases, the Earth's curvature becomes non-negligible, and
 projecting data onto a flat grid leads to inaccuracies in area and shape.
 Consequently, spherical formulations are geometrically more appropriate for
 large-scale modeling.
 
-The equivalent source method in spherical coordinates was first introduced by 
-\citet{VonFrese1981} as a computationally efficient alternative to spherical harmonics, 
-which become expensive at high degrees, and to Fourier transforms, which require planar 
-regridding of spherical data. Their approach relates potential field anomalies directly to 
-a distribution of equivalent point sources on a sphere through least squares inversion, 
-allowing the anomalies to be reproduced with far fewer parameters than spherical harmonics. 
-This formulation is numerically efficient because, once the source coefficients are solved, 
-continuation, differentiation, and filtering operations can be carried out by simply 
-recomputing the anomaly of the same source distribution at new conditions. Moreover, they 
-demonstrated that magnetic anomalies could be differentially reduced to the pole using 
-equivalent dipoles, thus enabling pole reduction directly in the spherical domain without 
+The equivalent source method in spherical coordinates was first introduced by
+\citet{VonFrese1981} as a computationally efficient alternative to spherical harmonics,
+which become expensive at high degrees, and to Fourier transforms, which require planar
+regridding of spherical data. Their approach relates potential field anomalies directly to
+a distribution of equivalent point sources on a sphere through least squares inversion,
+allowing the anomalies to be reproduced with far fewer parameters than spherical harmonics.
+This formulation is numerically efficient because, once the source coefficients are solved,
+continuation, differentiation, and filtering operations can be carried out by simply
+recomputing the anomaly of the same source distribution at new conditions. Moreover, they
+demonstrated that magnetic anomalies could be differentially reduced to the pole using
+equivalent dipoles, thus enabling pole reduction directly in the spherical domain without
 distortion.
 
 More recently, \citet{Kother2015} extended the regularized monopole
@@ -481,7 +481,7 @@ explicitly constructed, making the method highly scalable for datasets with mill
 A crucial step in our methodology is the selection of optimal hyperparameters for the equivalent
 source model, primarily the depth of the sources and the regularization parameter. In the context
 of large airborne surveys, this selection is particularly challenging but essential for a robust
-model \citep{Uppal2025, Soler2021}. 
+model \citep{Uppal2025, Soler2021}.
 To obtain a realistic assessment of the model's predictive performance, we use block cross-validation,
 a strategy specifically designed for data with spatial or temporal dependence \citep{Roberts2017}.
 This method respects the spatial structure of the data by ensuring independence between training and
@@ -529,69 +529,7 @@ source studies on airborne data to guide the selection of optimal model paramete
 
 \subsection{Synthetic data}
 
-To evaluate the performance and accuracy of the proposed methodology, we
-applied it to a synthetic magnetic dataset. This dataset was designed to
-simulate real-world conditions, incorporating a variety of crustal sources
-with different shapes, sizes, depths, and magnetizations. A complex regional
-field was modeled using a deep pattern of sources, to which a zero-mean
-Gaussian noise was added to simulate instrument and environmental noise. To
-replicate a realistic survey geometry, the magnetic field was sampled along
-the flight lines of an aeromagnetic survey from the Paraná Basin. The
-original dataset, provided by ANP and available through the CPRM/REATE
-portal, was preprocessed using a block-reduce operation, resulting in
-$507,395$ points whose coordinates were used for the simulation.
-
-The predicted fields were interpolated onto a regular grid with a spatial
-resolution of $1$~km. The resulting grid is defined in latitude, longitude,
-and height, with a shape of $(3, 1223, 1057)$, corresponding to the height
-dimension and the horizontal latitude--longitude grid. This grid contains a
-total of $3,878,133$ points.
-
-Before performing the dual-layer inversion, a block K-fold cross-validation
-strategy was employed to determine the optimal hyperparameters for both
-layers of the model. For the deep layer (Figure~\ref{fig_crossvalidation}a), the lowest RMSE is
-obtained for a relative depth of approximately $37$~km and a damping value of
-about $10^{0}$. This region of minimum error is relatively broad, indicating
-a stable solution with limited sensitivity to small variations in the
-hyperparameters. The optimal depth is consistent with the expected scale of
-the regional magnetic field and confirms that the deep layer effectively
-captures the long-wavelength components of the anomaly.
-
-
-For the shallow layer (Figure~\ref{fig_crossvalidation}b), the minimum RMSE is
-reached at a relative depth of approximately $9$~km and a damping value of
-about $10^{6}$. In this case, the RMSE minimum is more localized in the
-hyperparameter space, reflecting the increased sensitivity of the shallow
-layer to parameter variations. This behavior is expected for near-surface
-sources, which generate short-wavelength anomalies and require stronger
-regularization to prevent overfitting.
-
-The contrast between the optimal depths obtained for the deep and shallow
-layers highlights the multi-scale nature of the magnetic sources in the study
-area. The deeper sources primarily control the long-wavelength regional
-field, whereas the shallower sources account for localized anomalies. The
-consistent location of the RMSE minima in the hyperparameter space further
-demonstrates the robustness of the cross-validation procedure and supports
-the reliability of the selected model configuration.
-
-Using the hyperparameters selected by cross-validation, the dual-layer
-inversion was then performed. The core of the methodology lies in its
-dual-layer approach, which is illustrated in
-Figure~\ref{fig_decomposition}. This process separates the observed
-total-field anomaly (Figure~\ref{fig_decomposition}a) into two distinct
-components. First, a deep layer is fitted to a block-averaged version of the
-data to isolate long-wavelength signals. This strategy effectively models
-the smooth regional field (Figure~\ref{fig_decomposition}b) while reducing
-the required number of sources without sacrificing quality
-\citep{Uppal2025}. Subsequently, the iterative gradient-boosting algorithm is
-used to fit a shallower layer of sources to the remaining residual signal.
-This second layer models the short-wavelength anomalies associated with
-local sources (Figure~\ref{fig_decomposition}c). The effectiveness of this
-decomposition is evident, as the final residuals
-(Figure~\ref{fig_decomposition}d) are significantly smaller than those from
-the deep layer alone (Figure~\ref{fig_decomposition}e).
-
-\begin{figure}[htb]
+\begin{figure}[tb]
     \centering
     \includegraphics[width=1\linewidth]{figures/points-TFA-deep-shallow.jpeg}
     \caption{Illustration of the dual-layer decomposition process.
@@ -606,56 +544,183 @@ the deep layer alone (Figure~\ref{fig_decomposition}e).
     \label{fig_decomposition}
 \end{figure}
 
-The final gridded predictions, shown in Figure~\ref{fig_grid_results},
-confirm the accuracy of the dual-layer model. By combining the effects of
-both source layers, the method accurately reconstructs not only the
-total-field anomaly but also its eastward (Be), northward (Bn), and upward
-(Bu) components. There is a correspondence between the predicted fields
-(Figure~\ref{fig_grid_results}a-d) and the true synthetic fields
-(Figure~\ref{fig_grid_results}e-h). The quality of the inversion is further
-highlighted by the final residual maps
-(Figure~\ref{fig_grid_results}i-l), where the low magnitude and lack of
-coherent structures demonstrate that the model has successfully captured
-the underlying geophysical signals. This represents a significant
-improvement over single-layer approaches, which often struggle with
-multi-scale sources and suffer from artifacts at the survey borders
-\citep{Uppal2025}.
-
-\begin{figure}[htb]
+\begin{figure}[!ht]
     \centering
     \includegraphics[width=1\linewidth]{figures/grided-TFA-B.jpeg}
     \caption{Gridded interpolation results for the total-field anomaly and its
         vector components (Be, Bn, Bu). The first row \textbf{(a-d)} shows the
-        fields predicted ("Predicted") by the dual-layer model. The second row
-        \textbf{(e-h)} shows the true synthetic fields ("True") for comparison.
-        The third row \textbf{(i-l)} shows the final residuals ("Residuals"),
+        fields predicted (``Predicted'') by the dual-layer model. The second row
+        \textbf{(e-h)} shows the true synthetic fields (``True'') for comparison.
+        The third row \textbf{(i-l)} shows the final residuals (``Residuals"),
         corresponding to the difference between the true and predicted
         fields, demonstrating the accuracy of the inversion.}
     \label{fig_grid_results}
 \end{figure}
 
-The computational efficiency of the method is significantly enhanced by the
-use of the gradient-boosting algorithm, making it highly applicable to large
-datasets. As described by \citet{Soler2021}, this technique prevents the need
-to solve a single, massive linear system by iteratively processing the data
-in smaller, overlapping windows. To demonstrate its performance, the entire
-workflow, encompassing the inversion and forward modeling of $507{,}395$
-observation points, was completed in under $120$ minutes. This was achieved
-on a personal computer with an Intel\textsuperscript{\textregistered}
-Core\textsuperscript{TM} i5-9300H CPU @ $2.40$~GHz (8 cores) and $16$~GB of RAM.
-Such performance confirms the method's feasibility for large-scale surveys,
-overcoming a significant computational hurdle that has traditionally
-limited the equivalent source technique.
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/cv_synthetic.png}
+    \caption{Block K-fold cross-validation results for the synthetic dataset.
+    \textbf{a)} RMSE as a function of damping and relative depth for the deep
+    equivalent sources layer, computed using the block-reduced dataset.
+    \textbf{b)} RMSE obtained for the shallow layer using a cropped subset of
+    the residual data. White stars indicate the selected optimal
+    hyperparameter combinations corresponding to the minimum RMSE in each
+    panel.}
+    \label{fig_crossvalidation}
+\end{figure}
 
-The low residuals observed in the final results
-(Figure~\ref{fig_grid_results}i-l) provide a good fit and strong evidence of
-the method's excellent predictive capabilities. Overall, the tests with
-synthetic data show that the proposed dual-layer approach is efficient for
-predicting both the components of the field and the anomalous magnetic field
-based solely on total-field anomaly data \citep{Uppal2025}.
+To evaluate the performance and accuracy of the proposed methodology, we
+applied it to a synthetic magnetic dataset designed to reproduce realistic
+survey conditions. The model consists of multiple crustal sources with
+different geometries, depths, and magnetizations, generating both regional
+and local magnetic anomalies. The detailed configuration of the sources is
+provided in the supplementary material \citep{archive}.
 
+A complex regional magnetic field was generated using a deep distribution of
+sources. Zero-mean Gaussian noise with a standard deviation corresponding to
+5\% of the maximum absolute anomaly was added to the data to simulate
+instrumental and environmental noise. The total field was computed assuming a
+regional field with inclination $-25^{\circ}$ and declination $-20^{\circ}$,
+consistent with the mean IGRF values in the study area.
+
+To reproduce a realistic acquisition geometry, the synthetic field was
+sampled along the flight lines of a public-domain aeromagnetic survey from the
+Paraná Basin, Brazil. The original dataset, provided by the Agência Nacional
+do Petróleo (ANP) and distributed through the CPRM/REATE portal
+(\url{https://reate.cprm.gov.br/anp/TERRESTRE}), was preprocessed using a
+block-reduction procedure. This operation resulted in $507,395$ observation
+points, whose coordinates were used to generate the synthetic dataset. The
+resulting total-field anomaly is shown in
+Figure~\ref{fig_decomposition}a.
+
+The deep layer was estimated from a block-reduced version of the synthetic
+dataset in order to isolate the long-wavelength components of the magnetic
+field. A block-reduction procedure based on the mean was applied using a
+spacing of $0.3^{\circ}$ in both latitude and longitude directions,
+corresponding to approximately 33~km in the study area. This block size
+represents a compromise between data compression and preservation of
+regional-scale magnetic trends.
+
+As a result, the original dataset containing 507,395 observations was reduced
+to 795 data points, substantially decreasing the computational cost of the
+deep-layer inversion while preserving the long-wavelength magnetic signal
+(Figure~\ref{fig_decomposition}b).
+
+The hyperparameters of the deep layer were selected through a block K-fold
+cross-validation procedure applied to the block-reduced dataset. The tested
+parameter space comprised five relative depths ranging from approximately
+90~km to 270~km and five damping values varying from $10^{2}$ to $10^{6}$,
+resulting in 25 parameter combinations. Spatial blocks of approximately
+111~km (1$^{\circ}$) were used to preserve spatial dependence between samples
+during the cross-validation process.
+
+The cross-validation results are shown in
+Figure~\ref{fig_crossvalidation}a. The minimum RMSE was obtained for a relative
+depth of approximately 135~km and a damping value of $10^{3}$. The error
+surface exhibits a relatively broad minimum around this configuration,
+indicating limited sensitivity to moderate variations in the
+hyperparameters and suggesting a stable regional-field solution.
+
+Using the selected hyperparameters, the deep-layer inversion was performed
+using the entire block-reduced dataset. The resulting model represents the
+regional magnetic field and is shown in
+Figure~\ref{fig_decomposition}b. The predicted deep-layer field was then
+interpolated back onto the full observation coordinates, and the residuals
+between the original data and the deep-layer prediction were computed,
+these residuals constitute the input for the shallow-layer inversion.
+
+The shallow layer was estimated using an iterative gradient-boosting
+algorithm applied to the residuals of the deep layer. A moving window with a
+width of approximately 220~km (2$^{\circ}$) was adopted to control the spatial
+influence of each boosting iteration and ensure smooth convergence.
+
+Due to the large number of observations, performing cross-validation on the
+entire residual dataset would be computationally prohibitive. However, since
+the deep layer removes most of the long-wavelength signal, the remaining
+residuals are dominated by local magnetic effects. Therefore, a
+representative subset of the data was selected for hyperparameter tuning.
+
+This subset was obtained by cropping the residual dataset to the region
+bounded by longitudes $-54^{\circ}$ to $-52^{\circ}$ and latitudes
+$-17^{\circ}$ to $-16^{\circ}$, resulting in 15,307 observation points. This
+area contains a representative range of anomaly amplitudes and source
+geometries and preserves the spatial variability required for robust
+cross-validation.
+
+A block K-fold cross-validation was then applied to this subset using spatial
+blocks of approximately 12~km. This configuration ensures that neighboring
+observations are not simultaneously used for training and validation,
+reducing spatial bias. The tested hyperparameters comprised six relative
+depths ranging from 15~km to 30~km and five damping values varying from $10^{1}$
+to $10^{5}$, resulting in 30 parameter combinations.
+
+The cross-validation results are shown in
+Figure~\ref{fig_crossvalidation}b. The minimum RMSE was obtained for a relative
+depth of approximately 27~km and a damping value of $10^{2}$. In contrast to
+the deep layer, the RMSE surface exhibits a more localized minimum,
+highlighting the increased sensitivity of near-surface sources to parameter
+variations and the need for stronger regularization.
+
+The selected parameters were then applied to invert the full residual
+dataset, producing the shallow-layer model shown in
+Figure~\ref{fig_decomposition}d. The final residuals, obtained after combining
+the deep and shallow predictions, are presented in
+Figure~\ref{fig_decomposition}e. The low amplitude and spatially incoherent
+distribution of the residuals indicate that the main magnetic features were
+successfully modeled.
+
+The estimated deep and shallow layers were used to predict the magnetic field
+onto a regular grid with a spatial resolution of 1~km, constant height of
+500~m, and dimensions of $1223 \times 1057$, totaling $3,878,133$ points. In
+addition to the total-field anomaly, the eastward ($B_E$), northward ($B_N$),
+and upward ($B_U$) components were also predicted.
+
+The predicted grids are shown in Figure~\ref{fig_grid_results}a--d, together
+with the true synthetic fields in Figure~\ref{fig_grid_results}e--h and the
+final residuals in Figure~\ref{fig_grid_results}i--l. The residual maps exhibit
+low amplitudes and lack of coherent structures, demonstrating that the model
+successfully captures both regional and local magnetic signals within the
+data coverage area.
+
+By combining two source layers, the method accurately reconstructs the
+multi-scale structure of the magnetic field, representing a significant
+improvement over traditional single-layer approaches
+\citep{Uppal2025, Li2020}.
+
+The complete workflow, including the inversion of 507,395 observations and
+prediction over 3,878,133 grid points, was completed in under 120~minutes on a
+personal computer equipped with an
+Intel\textsuperscript{\textregistered} Core\textsuperscript{TM} i5-9300H CPU @
+2.40~GHz (8 cores) and 16~GB of RAM, demonstrating the suitability of the
+proposed methodology for large-scale magnetic datasets.
 
 \subsection{Real Data Application}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/comparison-blockreduce.jpeg}
+    \caption{Effect of varying block-mean size on the predicted total-field
+    anomaly for the same region used in the Paraná Basin ANP data.
+    \textbf{a--d)} Observed total-field anomaly gridded from different
+    block-mean decimations. \textbf{e--h)} Predicted total-field anomaly
+    using the spherical dual-layer gradient-boosted equivalent sources. The
+    convergence of the predicted grids as the block size approaches the
+    final grid resolution demonstrates the robustness of the method to
+    sampling-density variations.}
+    \label{fig_real_blockmean}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/real-data-tfa-norm-bcomponents.jpeg}
+    \caption{Predicted magnetic field for the Paraná Basin dataset.
+    (\textbf{a}) Total-field anomaly. (\textbf{b--d}) East, north, and upward
+    components of the magnetic field. The
+    smooth spatial behavior and coherence between components indicate the
+    numerical stability of the proposed modeling approach.}
+    \label{fig_real_components}
+\end{figure}
 
 To evaluate the performance of the proposed spherical dual-layer
 gradient-boosted equivalent sources method under realistic conditions,
@@ -666,7 +731,7 @@ magnetic modeling.
 
 Before the modeling procedure, the dataset was preprocessed to improve
 its consistency and numerical stability. Block-mean decimation was
-applied to reduce the dataset size and mitigate the effects of supersampling. 
+applied to reduce the dataset size and mitigate the effects of supersampling.
 In addition, tie lines were removed from the dataset
 due to amplitude inconsistencies that introduce spurious variations in
 the magnetic signal and systematic distortions, which could negatively
@@ -680,20 +745,6 @@ anomalies. Panels \textbf{a--d} show the observed total-field anomaly
 gridded using progressively finer block sizes, while panels
 \textbf{e--h} present the corresponding predicted anomalies obtained
 using the spherical dual-layer gradient-boosted equivalent sources.
-
-\begin{figure}[htb]
-\centering
-\includegraphics[width=1\linewidth]{figures/comparison-blockreduce.jpeg}
-\caption{Effect of varying block-mean size on the predicted total-field
-anomaly for the same region used in the Paraná Basin ANP data.
-\textbf{a--d)} Observed total-field anomaly gridded from different
-block-mean decimations. \textbf{e--h)} Predicted total-field anomaly
-using the spherical dual-layer gradient-boosted equivalent sources. The
-convergence of the predicted grids as the block size approaches the
-final grid resolution demonstrates the robustness of the method to
-sampling-density variations.}
-\label{fig_real_blockmean}
-\end{figure}
 
 The progressive convergence observed in the predicted grids as the block
 size decreases indicates that the proposed method is robust to changes
@@ -711,17 +762,6 @@ The quality of the final magnetic field prediction was assessed by
 analyzing the total-field anomaly and its vector components. Figure~
 \ref{fig_real_components} shows the predicted total-field anomaly and
 the three magnetic field components.
-
-\begin{figure}[htb]
-\centering
-\includegraphics[width=1\linewidth]{figures/real-data-tfa-norm-bcomponents.jpeg}
-\caption{Predicted magnetic field for the Paraná Basin dataset.
-(\textbf{a}) Total-field anomaly. (\textbf{b--d}) East, north, and upward
-components of the magnetic field. The
-smooth spatial behavior and coherence between components indicate the
-numerical stability of the proposed modeling approach.}
-\label{fig_real_components}
-\end{figure}
 
 The predicted total-field anomaly reproduces the main regional magnetic
 trends observed in the original data, while preserving important
