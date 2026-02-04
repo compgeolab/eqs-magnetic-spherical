@@ -15,7 +15,7 @@ all: $(PDF)
 
 show: $(PDF)
 	for fname in $^ ; do \
-		python -c "import sys; import webbrowser; webbrowser.open(sys.argv[1])" $$fname ; \
+		xdg-open $$fname ; \
 	done
 
 clean:
