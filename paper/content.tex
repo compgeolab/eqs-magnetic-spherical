@@ -546,19 +546,6 @@ source studies on airborne data to guide the selection of optimal model paramete
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[width=1\linewidth]{figures/grided-TFA-B.jpeg}
-    \caption{Gridded interpolation results for the total-field anomaly and its
-        vector components (Be, Bn, Bu). The first row \textbf{(a-d)} shows the
-        fields predicted (``Predicted'') by the dual-layer model. The second row
-        \textbf{(e-h)} shows the true synthetic fields (``True'') for comparison.
-        The third row \textbf{(i-l)} shows the final residuals (``Residuals"),
-        corresponding to the difference between the true and predicted
-        fields, demonstrating the accuracy of the inversion.}
-    \label{fig_grid_results}
-\end{figure}
-
-\begin{figure}[!ht]
-    \centering
     \includegraphics[width=1\linewidth]{figures/cv_synthetic.png}
     \caption{Block K-fold cross-validation results for the synthetic dataset.
     \textbf{a)} RMSE as a function of damping and relative depth for the deep
@@ -568,6 +555,19 @@ source studies on airborne data to guide the selection of optimal model paramete
     hyperparameter combinations corresponding to the minimum RMSE in each
     panel.}
     \label{fig_crossvalidation}
+\end{figure}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/grided-TFA-B.jpeg}
+    \caption{Gridded interpolation results for the total-field anomaly and its
+        vector components (Be, Bn, Bu). The first row \textbf{(a-d)} shows the
+        fields predicted (``Predicted'') by the dual-layer model. The second row
+        \textbf{(e-h)} shows the true synthetic fields (``True'') for comparison.
+        The third row \textbf{(i-l)} shows the final residuals (``Residuals"),
+        corresponding to the difference between the true and predicted
+        fields, demonstrating the accuracy of the inversion.}
+    \label{fig_grid_results}
 \end{figure}
 
 To evaluate the performance and accuracy of the proposed methodology, we
@@ -597,11 +597,10 @@ Figure~\ref{fig_decomposition}a.
 The deep layer was estimated from a block-reduced version of the synthetic
 dataset in order to isolate the long-wavelength components of the magnetic
 field. A block-reduction procedure based on the mean was applied using a
-spacing of $0.3^{\circ}$ in both latitude and longitude directions,
-corresponding to approximately 33~km in the study area. This block size
-represents a compromise between data compression and preservation of
+block size of $0.3^{\circ}$ in both latitudinal and longitudinal directions,
+corresponding to approximately 33~km at the equator. This block size
+represents a compromise between data compression and isolation of
 regional-scale magnetic trends.
-
 As a result, the original dataset containing 507,395 observations was reduced
 to 795 data points, substantially decreasing the computational cost of the
 deep-layer inversion while preserving the long-wavelength magnetic signal
@@ -611,89 +610,84 @@ The hyperparameters of the deep layer were selected through a block K-fold
 cross-validation procedure applied to the block-reduced dataset. The tested
 parameter space comprised five relative depths ranging from approximately
 90~km to 270~km and five damping values varying from $10^{2}$ to $10^{6}$,
-resulting in 25 parameter combinations. Spatial blocks of approximately
-111~km (1$^{\circ}$) were used to preserve spatial dependence between samples
-during the cross-validation process.
-
+resulting in 25 parameter combinations. Spatial blocks of 1$^{\circ}$ (approximately
+111~km) were used to avoid the spatial dependence between samples
+in the training and testing sets during the cross-validation process.
 The cross-validation results are shown in
 Figure~\ref{fig_crossvalidation}a. The minimum RMSE was obtained for a relative
 depth of approximately 135~km and a damping value of $10^{3}$. The error
-surface exhibits a relatively broad minimum around this configuration,
+surface exhibits a well-defined minimum around this configuration,
 indicating limited sensitivity to moderate variations in the
 hyperparameters and suggesting a stable regional-field solution.
 
 Using the selected hyperparameters, the deep-layer inversion was performed
 using the entire block-reduced dataset. The resulting model represents the
 regional magnetic field and is shown in
-Figure~\ref{fig_decomposition}b. The predicted deep-layer field was then
-interpolated back onto the full observation coordinates, and the residuals
-between the original data and the deep-layer prediction were computed,
-these residuals constitute the input for the shallow-layer inversion.
+Figure~\ref{fig_decomposition}b. The deep-layer was then used to predict the
+total-field anomaly onto the full observation coordinates.
+The residuals between the original data and the deep-layer prediction were
+computed, these residuals constitute the input for the shallow-layer inversion.
 
 The shallow layer was estimated using an iterative gradient-boosting
-algorithm applied to the residuals of the deep layer. A moving window with a
-width of approximately 220~km (2$^{\circ}$) was adopted to control the spatial
-influence of each boosting iteration and ensure smooth convergence.
+algorithm applied to the residuals of the deep layer. A window size of
+2$^{\circ}$ (approximately 220~km) was adopted to limit the memory usage of the
+inversion to the amount of RAM available.
 
-Due to the large number of observations, performing cross-validation on the
-entire residual dataset would be computationally prohibitive. However, since
+Performing cross-validation on the entire residual dataset would be
+computationally prohibitive due to the large number of observations.
+However, since
 the deep layer removes most of the long-wavelength signal, the remaining
 residuals are dominated by local magnetic effects. Therefore, a
 representative subset of the data was selected for hyperparameter tuning.
-
 This subset was obtained by cropping the residual dataset to the region
 bounded by longitudes $-54^{\circ}$ to $-52^{\circ}$ and latitudes
 $-17^{\circ}$ to $-16^{\circ}$, resulting in 15,307 observation points. This
-area contains a representative range of anomaly amplitudes and source
-geometries and preserves the spatial variability required for robust
-cross-validation.
-
+area contains a representative range of anomaly amplitudes and wavelengths,
+preserving the spatial variability required for robust cross-validation.
 A block K-fold cross-validation was then applied to this subset using spatial
-blocks of approximately 12~km. This configuration ensures that neighboring
+blocks of 0.1$^\circ$ (approximately 12~km). This configuration ensures that neighboring
 observations are not simultaneously used for training and validation,
 reducing spatial bias. The tested hyperparameters comprised six relative
 depths ranging from 15~km to 30~km and five damping values varying from $10^{1}$
 to $10^{5}$, resulting in 30 parameter combinations.
-
 The cross-validation results are shown in
 Figure~\ref{fig_crossvalidation}b. The minimum RMSE was obtained for a relative
 depth of approximately 27~km and a damping value of $10^{2}$. In contrast to
-the deep layer, the RMSE surface exhibits a more localized minimum,
-highlighting the increased sensitivity of near-surface sources to parameter
-variations and the need for stronger regularization.
+the deep layer, the RMSE surface exhibits a less well-defined minimum,
+highlighting the decreased sensitivity of near-surface sources to parameter
+variations.
 
 The selected parameters were then applied to invert the full residual
-dataset, producing the shallow-layer model shown in
+dataset, producing the predicted total-field anomaly of the shallow-layer model shown in
 Figure~\ref{fig_decomposition}d. The final residuals, obtained after combining
-the deep and shallow predictions, are presented in
+the deep and shallow predictions and subtracting them from the true data, are presented in
 Figure~\ref{fig_decomposition}e. The low amplitude and spatially incoherent
 distribution of the residuals indicate that the main magnetic features were
 successfully modeled.
 
-The estimated deep and shallow layers were used to predict the magnetic field
-onto a regular grid with a spatial resolution of 1~km, constant height of
+The estimated deep and shallow layers were then used to predict the magnetic field
+onto a regular grid with a spatial resolution of 0.009$^\circ$ (approximately
+1~km), constant height of
 500~m, and dimensions of $1223 \times 1057$, totaling $3,878,133$ points. In
 addition to the total-field anomaly, the eastward ($B_E$), northward ($B_N$),
 and upward ($B_U$) components were also predicted.
-
 The predicted grids are shown in Figure~\ref{fig_grid_results}a--d, together
 with the true synthetic fields in Figure~\ref{fig_grid_results}e--h and the
-final residuals in Figure~\ref{fig_grid_results}i--l. The residual maps exhibit
-low amplitudes and lack of coherent structures, demonstrating that the model
+difference between the true and predicted in Figure~\ref{fig_grid_results}i--l.
+The difference maps exhibit
+low amplitudes and lack of coherent structures.
+MELHORAR ESSA PARTE: (falar de parte fora da area e dos dikes de alta
+frequencia, recuperou as componentes do B a partir de dados de TFA)
+demonstrating that the model
 successfully captures both regional and local magnetic signals within the
 data coverage area.
 
-By combining two source layers, the method accurately reconstructs the
-multi-scale structure of the magnetic field, representing a significant
-improvement over traditional single-layer approaches
-\citep{Uppal2025, Li2020}.
-
-The complete workflow, including the inversion of 507,395 observations and
-prediction over 3,878,133 grid points, was completed in under 120~minutes on a
-personal computer equipped with an
+The complete workflow, including the dual-layer inversion of 507,395
+observations and prediction over 3,878,133 grid points, was completed in under
+120~minutes on a personal computer equipped with an
 Intel\textsuperscript{\textregistered} Core\textsuperscript{TM} i5-9300H CPU @
 2.40~GHz (8 cores) and 16~GB of RAM, demonstrating the suitability of the
-proposed methodology for large-scale magnetic datasets.
+proposed methodology for processing large-scale magnetic datasets.
 
 \subsection{Real Data Application}
 
