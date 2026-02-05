@@ -674,13 +674,29 @@ and upward ($B_U$) components were also predicted.
 The predicted grids are shown in Figure~\ref{fig_grid_results}a--d, together
 with the true synthetic fields in Figure~\ref{fig_grid_results}e--h and the
 difference between the true and predicted in Figure~\ref{fig_grid_results}i--l.
-The difference maps exhibit
-low amplitudes and lack of coherent structures.
-MELHORAR ESSA PARTE: (falar de parte fora da area e dos dikes de alta
-frequencia, recuperou as componentes do B a partir de dados de TFA)
-demonstrating that the model
-successfully captures both regional and local magnetic signals within the
-data coverage area.
+The difference maps exhibit low amplitudes and are largely free of coherent
+spatial patterns within the main data coverage area, indicating an accurate
+reconstruction of the observed magnetic field. Outside the core survey
+region, moderately increased residuals reflect edge effects and reduced data
+support near the survey boundaries. In regions dominated by high-frequency
+anomalies associated with very shallow dike systems, localized residuals are
+still observed, indicating that, despite the use of a dual-layer
+parameterization, the extremely shallow nature of these sources poses
+challenges for complete recovery.
+Nevertheless, the proposed approach provides a robust alternative to
+derivative-based transformations commonly used in magnetic data processing
+and inversion, which are known to strongly amplify measurement noise and
+acquisition-related artifacts. By estimating the full vector components
+directly from total-field anomaly data through physically constrained
+equivalent-source modeling, the method enables the use of physically
+meaningful field attributes as inputs for subsequent inversion and
+interpretation procedures.
+This strategy allows the enhancement of short-wavelength features while
+preserving numerical stability, avoiding the instability typically
+introduced by high-order spatial derivatives. As a result, the predicted
+field components constitute a reliable basis for further quantitative
+analysis, particularly in high-noise environments where traditional
+derivative operators often become unreliable.
 
 The complete workflow, including the dual-layer inversion of 507,395
 observations and prediction over 3,878,133 grid points, was completed in under
@@ -855,62 +871,91 @@ magnetic fields across multiple spatial scales.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions}
 
-In this work, we developed and validated a spherical equivalent sources
-method that integrates gradient boosting and dual-layer modeling for the
-efficient processing of large-scale aeromagnetic datasets. By extending
-recent advances in windowed inversion \citep{Soler2021} and dual layer equivalent
-sources decomposition \citep{Uppal2025} to a spherical method, the proposed methodology
-simultaneously addresses the geometric distortions inherent to
-Cartesian approaches and the computational limitations of traditional
-equivalent sources inversions.
+This study presented and systematically validated a spherical dual-layer
+gradient-boosted equivalent sources framework for large-scale magnetic data
+processing and multiscale field reconstruction. The proposed methodology
+integrates multi-layer equivalent sources modeling
+\citep{Uppal2025,Li2020}, gradient-boosted residual inversion
+\citep{Soller2021}, and rigorous spatial cross-validation into a unified and
+computationally efficient workflow.
 
-A complete physical formulation for magnetic dipole fields in spherical
-coordinates was implemented, including rigorous transformations
-between geodetic and geocentric reference systems. The identification
-and correction of inconsistencies in existing kernel expressions
-further improved the reliability of the forward modeling. Together,
-these developments provide a theoretical and numerical
-foundation for accurate vector-field reconstruction on regional to
-continental scales.
+The synthetic experiments demonstrated that the dual-layer configuration
+provides a robust mechanism for separating long- and short-wavelength
+magnetic components under realistic acquisition geometries and noise
+conditions. The adopted block-reduction strategy for the deep layer reduced
+the original dataset from more than 500,000 observations to fewer than 1,000
+points while preserving the dominant regional signal. This reduction enabled
+efficient hyperparameter tuning and inversion without compromising spectral
+fidelity.
+Cross-validation results obtained from the synthetic dataset showed broad and
+well-defined minima for the deep layer, indicating stable solutions and low
+sensitivity to moderate parameter variations. In contrast, the shallow layer
+exhibited more localized minima, reflecting the increased sensitivity of
+near-surface sources to depth and regularization. These results highlight the
+importance of multiscale parameter tuning and justify the adoption of separate
+optimization strategies for regional and local components.
 
-The integration of gradient boosting with an equal-area spherical
-tessellation enabled the inversion to be decomposed into a sequence of
-localized problems, drastically reducing memory requirements and
-computational cost. Synthetic experiments demonstrated that this
-strategy preserves inversion accuracy while allowing the processing of
-hundreds of thousands of observations on standard computing hardware.
-The dual-layer configuration proved essential for separating
-long-wavelength regional signals from short-wavelength crustal
-anomalies, yielding stable solutions with low residuals and minimal
-border artifacts.
+The application to real airborne magnetic data from the Paraná Basin
+confirmed the scalability and robustness of the proposed workflow under
+realistic conditions, including heterogeneous sampling density, acquisition
+artifacts, and large data volumes. The preprocessing strategy, combining
+temporal decimation, spatial block-mean reduction, and systematic removal of
+corrupted tie lines, proved essential for ensuring numerical stability and
+minimizing inversion bias.
+A detailed analysis of different spatial decimation strategies demonstrated
+that coarse block-mean spacings, although computationally efficient, lead to
+significant attenuation of short-wavelength anomalies and compromise the
+recovery of near-surface sources. Conversely, block spacings compatible with
+the final grid resolution preserved both regional and local features while
+reducing processing time by several hours relative to the full dataset. This
+trade-off analysis provides practical guidelines for large-scale magnetic
+data processing and highlights the importance of resolution-aware
+preprocessing.
+An important outcome of this work is the reliable reconstruction of the
+magnetic field vector and its amplitude from total-field anomaly data. The
+simultaneous recovery of the total-field anomaly, magnetic norm, and vector
+components yielded physically coherent and spatially consistent fields, in
+agreement with the theoretical framework proposed by \citet{Lima2009}. These
+results confirm the validity of the implemented approach for vector field
+reconstruction using physically constrained equivalent sources.
 
-Results from synthetic tests confirmed that the method successfully
-reconstructs both total-field anomalies and full magnetic vector
-components from total-field data alone. The low-magnitude, spatially
-uncorrelated residuals indicate that the proposed approach effectively
-captures multi-scale magnetic signals. These results highlight the
-advantages of sequential deep--shallow modeling over conventional
-single-layer formulations.
+The availability of vector components provides substantial advantages over
+traditional derivative-based interpretation techniques. Magnetic derivatives
+are inherently sensitive to noise, interpolation artifacts, and uneven data
+coverage, particularly in continental-scale surveys. In contrast, the
+equivalent-source-based reconstruction produces smooth, physically
+constrained fields that retain geological meaning while significantly
+reducing noise amplification.
 
-Applications to real aeromagnetic data further demonstrated the
-robustness of the methodology under realistic survey conditions.
-Systematic experiments with block-mean decimation revealed that the
-effective resolution of the inversion is primarily controlled by the
-final prediction grid. Once the sampling density approaches this scale,
-finer data no longer improve the recovered field. This finding supports
-the use of moderate decimation as a practical strategy for reducing
-computational cost without sacrificing interpretability in large-scale
-studies.
+This property is particularly relevant for advanced interpretation and
+inversion workflows. As demonstrated by Hidalgo-Gato, reliable vector
+components and multiscale field representations provide stronger constraints
+on source geometry, magnetization direction, and depth distribution than
+scalar data alone. The proposed framework therefore offers a solid foundation
+for subsequent structural mapping, susceptibility inversion, and integrated
+geophysical modeling.
 
-Overall, the proposed spherical dual-layer gradient-boosted equivalent
-source method provides an efficient, scalable, and geometrically
-consistent solution for regional and continental magnetic field
-modeling. It enables reliable interpolation, continuation, and
-vector-field recovery from heterogeneous airborne surveys, overcoming
-key limitations of previous Cartesian and global inversion approaches.
-This framework opens new perspectives for large-scale magnetic data
-integration and provides a solid basis for future developments in
-spherical potential-field modeling.
+The combined analysis of synthetic and real datasets demonstrates that the
+dual-layer strategy consistently outperforms traditional single-layer
+approaches, in agreement with previous findings by \citet{Uppal2025} and
+\citet{Li2020}. By explicitly accounting for multiscale source distributions,
+the method reduces spectral leakage between regional and local components and
+improves overall model interpretability.
+
+Overall, the results indicate that the spherical dual-layer
+gradient-boosted equivalent sources method constitutes a flexible, scalable,
+and physically consistent solution for modern magnetic data processing. The
+framework is capable of handling very large datasets while preserving
+essential geological information and maintaining manageable computational
+requirements.
+
+Beyond its immediate application to aeromagnetic data, the proposed approach
+provides a general platform for integrated geophysical analysis. Future
+developments may include joint inversion with gravity and electromagnetic
+data, adaptive window strategies, and machine-learning-assisted parameter
+selection, further enhancing its applicability to complex geological
+environments and continental-scale studies.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Open research}
