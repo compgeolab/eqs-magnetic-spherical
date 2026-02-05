@@ -880,15 +880,16 @@ magnetic field from observations of the total-field anomaly.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions}
 
-This study presented and systematically validated a spherical dual-layer
-gradient-boosted equivalent sources framework for large-scale magnetic data
-processing and multiscale field reconstruction. The proposed methodology
-integrates multi-layer equivalent sources modeling
-\citep{Uppal2025,Li2020}, gradient-boosted residual inversion
-\citep{Soller2021}, and rigorous spatial cross-validation into a unified and
+This study presented and systematically validated a spherical equivalent
+sources framework for large-scale magnetic data processing, interpolation, and
+transformation. The proposed methodology integrates dual-layer equivalent
+sources modeling \citep{Uppal2025,Li2020}, gradient-boosting
+\citep{Soller2021}, and spatial cross-validation into a unified and
 computationally efficient workflow.
+Our equivalent sources formulation can work with data in both spherical and
+geodetic coordinate systems.
 
-The synthetic experiments demonstrated that the dual-layer configuration
+The synthetic data experiments demonstrated that the dual-layer configuration
 provides a robust mechanism for separating long- and short-wavelength
 magnetic components under realistic acquisition geometries and noise
 conditions. The adopted block-reduction strategy for the deep layer reduced
@@ -896,30 +897,34 @@ the original dataset from more than 500,000 observations to fewer than 1,000
 points while preserving the dominant regional signal. This reduction enabled
 efficient hyperparameter tuning and inversion without compromising spectral
 fidelity.
-Cross-validation results obtained from the synthetic dataset showed broad and
-well-defined minima for the deep layer, indicating stable solutions and low
-sensitivity to moderate parameter variations. In contrast, the shallow layer
-exhibited more localized minima, reflecting the increased sensitivity of
+Cross-validation results obtained from the synthetic dataset showed a
+well-defined minimum for the deep layer, indicating a stable solution.
+The cross-validation of the shallow layer
+exhibited a less well-defined minimum, reflecting the decreased sensitivity of
 near-surface sources to depth and regularization. These results highlight the
-importance of multiscale parameter tuning and justify the adoption of separate
+importance of independent parameter tuning and justify the adoption of separate
 optimization strategies for regional and local components.
+RECUPERACAO DO B FUNCIONA A PARTIR DA ANOMALIA.
 
 The application to real airborne magnetic data from the Paraná Basin
 confirmed the scalability and robustness of the proposed workflow under
 realistic conditions, including heterogeneous sampling density, acquisition
-artifacts, and large data volumes. The preprocessing strategy, combining
-temporal decimation, spatial block-mean reduction, and systematic removal of
-corrupted tie lines, proved essential for ensuring numerical stability and
-minimizing inversion bias.
+artifacts, and large data volumes (upward of 1.5 million data points).
 A detailed analysis of different spatial decimation strategies demonstrated
-that coarse block-mean spacings, although computationally efficient, lead to
-significant attenuation of short-wavelength anomalies and compromise the
-recovery of near-surface sources. Conversely, block spacings compatible with
-the final grid resolution preserved both regional and local features while
-reducing processing time by several hours relative to the full dataset. This
-trade-off analysis provides practical guidelines for large-scale magnetic
-data processing and highlights the importance of resolution-aware
-preprocessing.
+that decimation using coarse block sizes (of the order of the line spacing),
+although computationally efficient, leads to
+significant attenuation of short-wavelength anomalies and compromises the
+recovery of near-surface sources.
+Conversely, data decimation using a block size that is compatible with
+the final grid resolution preserved the amplitude of short-wavelength anomalies
+and resulted in a grid that is largely indistinguishable from the one produced
+with the full dataset.
+Moreover, the processing time for the reduced dataset was approximately 20\%
+smaller than for the full dataset.
+Therefore, we recommend always decimating the input data using a block mean
+operation with block size equal to the desired grid spacing
+\citep{Smith1990}.
+
 An important outcome of this work is the reliable reconstruction of the
 magnetic field vector and its amplitude from total-field anomaly data. The
 simultaneous recovery of the total-field anomaly, magnetic norm, and vector
