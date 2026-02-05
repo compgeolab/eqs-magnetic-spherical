@@ -747,7 +747,10 @@ proposed methodology for processing large-scale magnetic datasets.
 
 To evaluate the performance of the proposed methodology under realistic
 conditions, it was applied to airborne magnetic data acquired over the Paraná
-Basin, Brazil. The survey covers latitudes from $-24.14^{\circ}$ to
+Basin, Brazil.
+The dataset, provided by the Agência Nacional do Petróleo (ANP;
+\url{https://reate.cprm.gov.br/anp/TERRESTRE}),
+covers latitudes from $-24.14^{\circ}$ to
 $-14.14^{\circ}$ and longitudes from $-56.44^{\circ}$ to $-46.96^{\circ}$,
 encompassing one of the largest sedimentary basins in South America.
 Data acquisition was conducted along north--south flight lines spaced
@@ -756,22 +759,26 @@ average altitude of 1800~m. Horizontal and vertical positioning were obtained
 using GPS, ensuring high positional accuracy. The dataset was originally
 referenced to the SAD-69 datum and subsequently converted to WGS-84 using
 official transformation parameters.
-The original raw data were sampled at 100~Hz and subsequently decimated to 1~Hz
-by averaging consecutive groups of 100 samples along each flight line.
-Numerical variables were averaged, while categorical and identifier fields
+The original raw data were sampled at 100~Hz, which results in approximately
+one data points every 8 cm.
+This leads to an unnecessarily large dataset given the 6 km line spacing.
+Hence, we decimated the data to 1~Hz by averaging consecutive groups of 100
+samples along each flight line.
+Numerical variables in the dataset were averaged, while categorical and identifier fields
 were retained from the central record of each block. Records containing
 corrupted or inconsistent values were discarded. This procedure preserves
 along-line continuity while significantly reducing the dataset size. In
-addition, tie lines were removed because they exhibited corrupted and
+addition, tie lines were removed because they exhibited
 inconsistent amplitude values, introducing spurious variations and systematic
 distortions in the magnetic signal that could negatively affect the equivalent
-sources modeling. After this preprocessing step, the resulting dataset is
+sources modeling. After this preprocessing step, the resulting dataset with
+1,636,695 observations is
 illustrated in Figure~\ref{fig_real_blockmean}a.
 
 To investigate the sensitivity of the method to variations in sampling
 density and spatial resolution, three spatial decimation strategies were
 tested, including block-mean spacings of $0.06^{\circ}$ (approximately 6.6~km)
-Figure~\ref{fig_real_blockmean}b,$0.0023^{\circ}$ (approximately 250~m) 
+Figure~\ref{fig_real_blockmean}b,$0.0023^{\circ}$ (approximately 250~m)
 Figure~\ref{fig_real_blockmean}c,and the complete dataset without
 decimation. The latter was used to generate a final grid with 250~m
 resolution.
