@@ -713,7 +713,7 @@ proposed methodology for large-scale magnetic datasets.
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[width=1\linewidth]{figures/v_real_00023.png}
+    \includegraphics[width=1\linewidth]{figures/cv_real_00023.png}
     \caption{Block K-fold cross-validation results for the real dataset.
     \textbf{a)} RMSE as a function of damping and relative depth for the deep
     equivalent sources layer, computed using the block-reduced dataset.
@@ -746,20 +746,23 @@ average altitude of 1800~m. Horizontal and vertical positioning were obtained
 using GPS, ensuring high positional accuracy. The dataset was originally
 referenced to the SAD-69 datum and subsequently converted to WGS-84 using
 official transformation parameters.
-The original raw data were sampled at 100~Hz and subsequently decimated to 1~Hz by averaging consecutive groups of
-100 samples along each flight line. Numerical variables were averaged, while
-categorical and identifier fields were retained from the central record of
-each block. Records containing corrupted or inconsistent values were
-discarded. This procedure preserves along-line continuity while
-significantly reducing the dataset size, in addition, tie lines were removed because they exhibited corrupted and
+The original raw data were sampled at 100~Hz and subsequently decimated to 1~Hz
+by averaging consecutive groups of 100 samples along each flight line.
+Numerical variables were averaged, while categorical and identifier fields
+were retained from the central record of each block. Records containing
+corrupted or inconsistent values were discarded. This procedure preserves
+along-line continuity while significantly reducing the dataset size. In
+addition, tie lines were removed because they exhibited corrupted and
 inconsistent amplitude values, introducing spurious variations and systematic
 distortions in the magnetic signal that could negatively affect the equivalent
-sources modeling.
+sources modeling. After this preprocessing step, the resulting dataset is
+illustrated in Figure~\ref{fig_real_blockmean}a.
 
 To investigate the sensitivity of the method to variations in sampling
 density and spatial resolution, three spatial decimation strategies were
-tested, including block-mean spacings of $0.06^{\circ}$ (approximately 6.6~km),
-$0.0023^{\circ}$ (approximately 250~m), and the complete dataset without
+tested, including block-mean spacings of $0.06^{\circ}$ (approximately 6.6~km)
+Figure~\ref{fig_real_blockmean}b,$0.0023^{\circ}$ (approximately 250~m) 
+Figure~\ref{fig_real_blockmean}c,and the complete dataset without
 decimation. The latter was used to generate a final grid with 250~m
 resolution.
 For all decimation levels, a consistent multiscale processing strategy was
@@ -767,23 +770,34 @@ adopted. Spatial blocks of $0.45^{\circ}$ (approximately 50~km) were used for cr
 and parameter tuning of the deep layer, ensuring independence at regional
 scales. For the shallow layer, block sizes of $0.18^{\circ}$ (approximately 20~km) were
 employed to preserve local spatial variability while avoiding spatial
-overfitting. In addition, a moving window with a width of $1.5^{\circ}$ was
-used in the gradient-boosting procedure to control the spatial influence of
-each iteration and ensure stable convergence.
+overfitting. In addition, a moving window with a width of $1.5^{\circ}$ was used in the
+gradient-boosting procedure to control the amount of data processed in each
+iteration, ensuring efficient memory usage and computational stability.
 This unified configuration allows a direct assessment of the robustness of
 the proposed methodology with respect to data density, while maintaining
 consistent regularization and spatial constraints across all experiments.
 The observed and predicted grids obtained from the different decimation
-strategies are shown in Figure~\ref{fig_real_blockmean}. As the block size
-decreases and approaches the target grid resolution, the predicted magnetic
-fields exhibit progressive convergence, indicating robustness with respect
-to sampling density and spatial resolution.
-
-Based on this analysis, the block spacing of $0.0023^{\circ}$ was selected as a
-compromise between computational efficiency and spatial resolution. This
-dataset was subsequently used for the full application of the dual-layer
-methodology. From this stage onward, the processing workflow was identical to
-that adopted for the synthetic dataset.
+strategies are shown in Figure~\ref{fig_real_blockmean}d--f.
+The coarsest block-mean decimation ($0.06^{\circ}$) Figure~\ref{fig_real_blockmean}d resulted in the shortest
+processing time (approximately 52~minutes); however, it significantly
+attenuated short-wavelength magnetic anomalies, compromising the recovery of
+near-surface sources and limiting its practical applicability. In contrast,
+the finest block-mean decimation ($0.0023^{\circ}$) Figure~\ref{fig_real_blockmean}e, corresponding to the target
+grid resolution, required approximately 10~hours and 48~minutes and produced
+results that are nearly indistinguishable from those obtained using the full
+post-processed dataset, which required approximately 13~hours and 49~minutes.
+Despite the higher computational cost, the $0.0023^{\circ}$ block-mean
+decimation provides a substantial reduction in processing time (about four
+hours) relative to the full dataset, while preserving the dominant
+short- and long-wavelength magnetic features. As the block size decreases and
+approaches the target grid resolution, the predicted magnetic fields exhibit
+progressive convergence, indicating robustness with respect to sampling
+density and spatial resolution.
+Based on this trade-off between computational efficiency and spectral
+preservation, the block spacing of $0.0023^{\circ}$ was selected for the
+subsequent analyses. This dataset was therefore adopted for the full
+application of the dual-layer methodology. From this stage onward, the
+processing workflow was identical to that adopted for the synthetic dataset.
 The deep layer was estimated from a block-reduced version of the selected
 dataset using a spacing of $0.1^{\circ}$, corresponding to approximately
 11~km. Cross-validation blocks with characteristic dimensions of
@@ -805,9 +819,10 @@ between the original data and the deep-layer prediction were computed. These
 residuals constitute the input for the shallow-layer inversion.
 
 The shallow layer was estimated using an iterative gradient-boosting
-algorithm applied to the deep-layer residuals. A moving window with a width of
-$1.5^{\circ}$ was adopted to control the spatial influence of each boosting
-iteration and ensure smooth convergence.
+algorithm applied to the deep-layer residuals. The moving window with a width of $1.5^{\circ}$ was adopted in the
+gradient-boosting procedure to control the amount of data processed in each
+window, thereby limiting memory consumption and ensuring that the computations
+remained compatible with the available RAM resources.
 Due to the large number of observations, cross-validation on the entire
 residual dataset would be computationally prohibitive. Therefore, a
 representative subset was selected for hyperparameter tuning by cropping the
@@ -827,15 +842,21 @@ The selected parameters were then applied to invert the full residual
 dataset, producing the shallow-layer model. The final residuals, obtained
 after combining the deep and shallow predictions, exhibit low amplitudes and
 lack coherent spatial structures.
-
-The estimated deep and shallow layers were used to predict the magnetic field
-onto a regular grid with a spatial resolution of 250~m and constant height of
-500~m.
-
-In addition to the total-field anomaly, the eastward ($B_E$),
-northward ($B_N$), and upward ($B_U$) components were also predicted Figure~\ref{fig_real_components}.
-
-
+The estimated deep and shallow layers were subsequently used to predict the
+magnetic field onto a regular grid with a spatial resolution of 250~m and a
+constant height of 500~m. In addition to the total-field anomaly
+(Figure~\ref{fig_real_components}b), the amplitude (norm) of the magnetic field
+(Figure~\ref{fig_real_components}c) and the eastward ($B_E$),
+northward ($B_N$), and upward ($B_U$) components
+(Figure~\ref{fig_real_components}d--f) were also computed.
+The magnetic field norm highlights and centralizes the main anomaly patterns,
+providing an integrated view of source distribution. The $B_E$ component
+emphasizes predominantly north--south-oriented features, whereas the $B_N$
+component enhances east--west-trending structures. The $B_U$ component also
+exhibits well-centered anomalies, consistent with the distribution observed
+in the total-field and norm maps. Together, these results confirm the ability
+of the proposed methodology to recover physically consistent multicomponent
+magnetic fields across multiple spatial scales.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions}
