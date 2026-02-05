@@ -1,1 +1,17 @@
-The equivalent source method has become a widely used tool among geoscientists for processing and interpolating magnetic data, especially in the context of airborne surveys. Nonetheless, approaches based on Cartesian coordinates present important limitations at regional and global scales, where the curvature of the Earth introduces geometric inconsistencies that affect data integration and modeling accuracy. To address this issue, we propose an adaptation of the magnetic equivalent source technique to spherical coordinates, accompanied by necessary revisions to its mathematical formulation to accommodate the new geometry. To ensure computational feasibility in large datasets, we incorporate a gradient-boosting strategy that improves performance in high-resolution applications. The method is assessed using synthetic models, with particular attention to its behavior under challenging conditions such as heterogeneous data coverage and complex geological scenarios. The final implementation will be made available as open-source software, aiming to facilitate broader adoption within the geophysical community.
+The equivalent source method is widely used for processing and interpolating
+magnetic data, particularly in airborne surveys. However, implementations
+based on Cartesian coordinates present limitations at regional and global
+scales, where Earth curvature introduces geometric inconsistencies that affect
+data integration and modeling accuracy.
+To address this problem, this study proposes an adaptation of the magnetic
+equivalent source method to spherical coordinates, including revisions to its
+mathematical formulation to account for spherical geometry. The proposed
+framework enables consistent magnetic field modeling over large geographic
+areas.
+To ensure computational feasibility for large and high-resolution datasets,
+a gradient-boosting strategy is incorporated into the inversion process,
+improving efficiency and prediction performance.
+The method is evaluated using synthetic models, with emphasis on heterogeneous
+data coverage, variable observation heights, and complex source distributions.
+The final implementation is released as open-source software to support
+reproducibility and broader adoption.

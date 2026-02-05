@@ -904,7 +904,10 @@ exhibited a less well-defined minimum, reflecting the decreased sensitivity of
 near-surface sources to depth and regularization. These results highlight the
 importance of independent parameter tuning and justify the adoption of separate
 optimization strategies for regional and local components.
-RECUPERACAO DO B FUNCIONA A PARTIR DA ANOMALIA.
+Most importantly, as shown in the synthetic data results, the
+accurate recovery of the magnetic field components from the total-field
+anomaly demonstrates the effectiveness and physical consistency of the
+proposed inversion framework.
 
 The application to real airborne magnetic data from the Paraná Basin
 confirmed the scalability and robustness of the proposed workflow under
@@ -942,19 +945,14 @@ constrained fields that retain geological meaning while significantly
 reducing noise amplification.
 
 This property is particularly relevant for advanced interpretation and
-inversion workflows. As demonstrated by Hidalgo-Gato, reliable vector
-components and multiscale field representations provide stronger constraints
-on source geometry, magnetization direction, and depth distribution than
-scalar data alone. The proposed framework therefore offers a solid foundation
-for subsequent structural mapping, susceptibility inversion, and integrated
-geophysical modeling.
-
-The combined analysis of synthetic and real datasets demonstrates that the
-dual-layer strategy consistently outperforms traditional single-layer
-approaches, in agreement with previous findings by \citet{Uppal2025} and
-\citet{Li2020}. By explicitly accounting for multiscale source distributions,
-the method reduces spectral leakage between regional and local components and
-improves overall model interpretability.
+inversion workflows. As demonstrated by \citet{HidalgoGato2021} the use of
+vector-derived quantities, such as the amplitude of the magnetic anomaly,
+provides robust constraints on source geometry and depth while being only
+weakly dependent on the magnetization direction. This characteristic
+allows reliable structural characterization even in the presence of
+remanent magnetization and limited prior information. Consequently, the
+proposed framework offers a solid foundation for subsequent structural
+mapping, susceptibility inversion, and integrated geophysical modeling.
 
 Overall, the results indicate that the spherical dual-layer
 gradient-boosted equivalent sources method constitutes a flexible, scalable,
