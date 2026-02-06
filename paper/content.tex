@@ -904,69 +904,65 @@ exhibited a less well-defined minimum, reflecting the decreased sensitivity of
 near-surface sources to depth and regularization. These results highlight the
 importance of independent parameter tuning and justify the adoption of separate
 optimization strategies for regional and local components.
-Most importantly, as shown in the synthetic data results, the
-accurate recovery of the magnetic field components from the total-field
-anomaly demonstrates the effectiveness and physical consistency of the
-proposed inversion framework.
+Moreover, our synthetic data results show that our spherical dual-layer method
+is able to accurately recover the magnetic field components from the
+total-field anomaly observations.
+This was shown to be theoretically possible through the use of Fourier
+transform by \citet{Lima2009} and through the use of equivalent sources by
+\citet{Li2020}.
+Here, we demonstrate that this can also be achieved in a spherical or geodetic
+reference frame through the use of equivalent sources.
 
-The application to real airborne magnetic data from the Paraná Basin
-confirmed the scalability and robustness of the proposed workflow under
-realistic conditions, including heterogeneous sampling density, acquisition
-artifacts, and large data volumes (upward of 1.5 million data points).
-A detailed analysis of different spatial decimation strategies demonstrated
-that decimation using coarse block sizes (of the order of the line spacing),
-although computationally efficient, leads to
-significant attenuation of short-wavelength anomalies and compromises the
-recovery of near-surface sources.
-Conversely, data decimation using a block size that is compatible with
-the final grid resolution preserved the amplitude of short-wavelength anomalies
-and resulted in a grid that is largely indistinguishable from the one produced
-with the full dataset.
+The application to real airborne magnetic data from the Paraná Basin confirmed
+the scalability and robustness of the proposed workflow under realistic
+conditions, including heterogeneous sampling density, acquisition artifacts,
+and large data volumes (upward of 1.5 million data points). A detailed analysis
+of different spatial decimation strategies demonstrated that decimation using
+coarse block sizes (of the order of the line spacing), although computationally
+efficient, leads to significant attenuation of short-wavelength anomalies and
+compromises the recovery of near-surface sources. Conversely, data decimation
+using a block size that is compatible with the final grid resolution preserved
+the amplitude of short-wavelength anomalies and resulted in a grid that is
+largely indistinguishable from the one produced with the full dataset.
 Moreover, the processing time for the reduced dataset was approximately 20\%
-smaller than for the full dataset.
-Therefore, we recommend always decimating the input data using a block mean
-operation with block size equal to the desired grid spacing
-\citep{Smith1990}.
+smaller than for the full dataset. Therefore, we recommend always decimating
+the input data using a block mean operation with block size equal to the
+desired grid spacing \citep{Smith1990}.
 
-An important outcome of this work is the reliable reconstruction of the
-magnetic field vector and its amplitude from total-field anomaly data. The
-simultaneous recovery of the total-field anomaly, magnetic norm, and vector
-components yielded physically coherent and spatially consistent fields, in
-agreement with the theoretical framework proposed by \citet{Lima2009}. These
-results confirm the validity of the implemented approach for vector field
-reconstruction using physically constrained equivalent sources.
-
-The availability of vector components provides substantial advantages over
-traditional derivative-based interpretation techniques. Magnetic derivatives
-are inherently sensitive to noise, interpolation artifacts, and uneven data
-coverage, particularly in continental-scale surveys. In contrast, the
-equivalent-source-based reconstruction produces smooth, physically
-constrained fields that retain geological meaning while significantly
-reducing noise amplification.
-
-This property is particularly relevant for advanced interpretation and
-inversion workflows. As demonstrated by \citet{HidalgoGato2021} the use of
-vector-derived quantities, such as the amplitude of the magnetic anomaly,
-provides robust constraints on source geometry and depth while being only
-weakly dependent on the magnetization direction. This characteristic
+The availability of vector components provides some advantages over traditional
+derivative-based interpretation techniques. Magnetic derivatives are inherently
+sensitive to noise, interpolation artifacts, and uneven data coverage,
+particularly in continental-scale surveys. In contrast, the
+equivalent-source-based predicted field components and amplitude produces
+smooth, physically constrained fields that retain geological meaning while
+avoiding noise amplification.
+The anomalous field amplitude is particularly useful for interpretation and
+geometry inversion workflows.
+As demonstrated by \citet{HidalgoGato2021},
+the inversion of basement relief from the amplitude of the magnetic field
+is only
+weakly dependent on the often unknown magnetization direction. This characteristic
 allows reliable structural characterization even in the presence of
 remanent magnetization and limited prior information. Consequently, the
-proposed framework offers a solid foundation for subsequent structural
+framework proposed here offers a solid foundation for subsequent structural
 mapping, susceptibility inversion, and integrated geophysical modeling.
 
 Overall, the results indicate that the spherical dual-layer
 gradient-boosted equivalent sources method constitutes a flexible, scalable,
 and physically consistent solution for magnetic data processing. The
 framework is capable of handling very large datasets while preserving
-short- long-wavelength of the magnetic field and maintaining manageable computational
+short- and long-wavelength of the magnetic field and maintaining manageable computational
 requirements.
-Future developments will include a systematic evaluation of distortions introduced
-by Cartesian formulations in comparison with the spherical framework, the
-adaptation of the spherical dual-layer equivalent sources methodology to gravimetric
-data, and the extension of Euler deconvolution techniques to spherical
-coordinates for improved source geometry interpretation. These advances will
-further enhance the applicability of the framework to complex geological
-environments and continental-scale studies.
+The method proposed here is able to handle millions of
+data points in a modest computer in the timescale of hours.
+However, the spherical calculations are significantly slower than their
+Cartesian counterparts.
+Thus, the current formulation will likely struggle to process larger
+compilations involving multiple surveys and tens to hundreds of millions of
+data points without access to significant computational resources.
+Further optimization of the equivalent sources methods would be required to
+make it feasible to use our method to generate a consistent and integrated
+model for continental scale data compilations.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -979,9 +975,11 @@ study is available at \url{https://github.com/\GitHubRepository} and
 This research made use of the following open-source scientific software:
 NumPy \citep{Harris2020} for numerical computing and linear algebra,
 Matplotlib \citep{Hunter2007} and PyGMT \citep{PyGMT2026} for visualization and map
-generation, Pandas \citep{Pandas} for tabular data handling,
+generation, Pandas \citep{pandas} for tabular data handling,
 Xarray \citep{Hoyer2017} for working with gridded datasets,
-Verde \citep{Uieda2018} for spatial interpolation and moving-window analysis, and
+Pooch \citep{Uieda2020} for downloading and caching data,
+Verde \citep{Uieda2018} for spatial interpolation and moving-window analysis,
+and
 Harmonica \citep{Harmonica2024} for potential field data
 processing and modelling. Jupyter Notebooks were used for code development,
 documentation, and reproducibility.
@@ -996,7 +994,10 @@ Geological Survey of Brazil (CPRM) through the REATE platform at
 
 We are indebted to the developers and maintainers of the open-source software
 without which this work would not have been possible.
-Acknowledge any non-author contributors to this study.
-Statement about funding.
-
+ASM was supported by scholarship 88887.947899/2024-00 from Coordenação de
+Aperfeiçoamento de Pessoal de Nível Superior (CAPES).
+LU was supported in part by start-up grant PRPI 22.1.09345.01.2 from
+Universidade de São Paulo.
+We are grateful to Santiago R. Soler, Yago M. Castro, and Gelson F.
+Souza-Junior for discussions that helped shape and refine this research.
 % Thank the editors and reviewers after review.
