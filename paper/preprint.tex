@@ -10,37 +10,8 @@
 % Set a class and general configuration
 \documentclass[onecolumn,10pt]{article}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Set variables with the title, authors, etc.
-\newcommand{\Title}{The long version of the paper title}
-\newcommand{\TitleShort}{A short title}
-
-\newcommand{\Year}{2025}
-\newcommand{\SubmittedOn}{2025/02/28}
-\newcommand{\PublishedOn}{2025/02/28}
-
-\newcommand{\AuthorShort}{Siqueira-Macedo \textit{et al.}}
-\newcommand{\Authors}{%
-  Arthur Siqueira-Macedo\textsuperscript{1},
-  Leonardo Uieda\textsuperscript{1}
-}
-\newcommand{\Email}{arthursmacedo@usp.br}
-\newcommand{\Corresponding}{%
-  Corresponding author: Arthur Siqueira-Macedo <\href{mailto:\Email}{\Email}>
-}
-\newcommand{\Affiliations}{%
-  \textsuperscript{1} Universidade de São Paulo, Brazil;
-}
-
-\newcommand{\Journal}{Geochemistry, Geophysics, Geosystems}
-\newcommand{\JournalDOI}{YYYYY/YYYYYYY}
-\newcommand{\PreprintDOI}{XXXXX/XXXXXXX}
-\newcommand{\ArchiveDOI}{DOI_FOR_THE_REPO_ARCHIVE}
-\newcommand{\GitHubRepository}{compgeolab/eqs-magnetic-spherical}
-
-\newcommand{\Keywords}{%
-  keyword1; keyword2; keyword3;
-}
+% Import title, authors, etc from this file
+\input{information.tex}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Import the required packages
@@ -90,7 +61,7 @@
 \usepackage{environ}
 % To control hyphenation for individual blocks of text
 \usepackage{hyphenat}
-%To create algorithms 
+%To create algorithms
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 
@@ -228,17 +199,17 @@
 \begin{summarybox}
   \noindent
   \textbf{Disclaimer:}
-  %This is a non-peer reviewed preprint of an article submitted for publication
-  %in \textit{\Journal{}}. It is available from EarthArXiv at
-  %\url{https://doi.org/\PreprintDOI}.
+  This is a non-peer reviewed preprint of an article submitted for publication
+  in \textit{\Journal{}}. It is available from EarthArXiv at
+  \url{https://doi.org/\PreprintDOI}.
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Comment the above and uncomment below after publication in a journal
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  This is a peer-reviewed author-produced postprint of the article
-  ``\AuthorShort{} (\Year). \Title. \textit{\Journal}.
-  doi:\href{https://doi.org/\JournalDOI}{\JournalDOI}''.
-  The postprint is available from EarthArXiv at
-  \url{https://doi.org/\PreprintDOI}.
+  % This is a peer-reviewed author-produced postprint of the article
+  % ``\AuthorShort{} (\Year). \Title. \textit{\Journal}.
+  % doi:\href{https://doi.org/\JournalDOI}{\JournalDOI}''.
+  % The postprint is available from EarthArXiv at
+  % \url{https://doi.org/\PreprintDOI}.
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   \\[0.25cm]
   \noindent
@@ -247,9 +218,6 @@
   research can be freely accessed and reused under the terms of an open license.
   You can find it at \url{https://doi.org/\ArchiveDOI} and
   \url{https://github.com/\GitHubRepository}.
-  \\[0.25cm]
-  \noindent
-  \textbf{Keywords:} \Keywords{}
   \\[0.25cm]
   \noindent
   \textbf{\textcopyright{} \Year{} The Authors.}

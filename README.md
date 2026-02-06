@@ -1,8 +1,9 @@
-# Paper title
+# Magnetic dual-layer equivalent sources on the sphere
 
 by
-[Arthur Siqueira-Macedo](https://orcid.org/0009-0006-5106-4356)
-and [Leonardo Uieda](https://orcid.org/0000-0001-6123-9515)
+[Arthur Siqueira-Macedo](https://orcid.org/0009-0006-5106-4356),
+[Leonardo Uieda](https://orcid.org/0000-0001-6123-9515),
+[India Uppal](https://orcid.org/0000-0003-3531-2656)
 
 This repository contains the data and source code used to produce the results
 presented in:
@@ -13,7 +14,7 @@ presented in:
 |-:|:-----|
 | Version of record | https://doi.org/JOURNAL_DOI |
 | Open-access version on EarthArXiv | https://doi.org/EARTHARXIV_DOI |
-| Archive of this repository | https://doi.org/FIGSHARE_ZENODO_DOI |
+| Archive of this repository | https://doi.org/10.5281/zenodo.18509844 |
 | Reproducing our results | [`REPRODUCING.md`](REPRODUCING.md) |
 
 ## About
