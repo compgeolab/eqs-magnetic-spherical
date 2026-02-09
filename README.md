@@ -27,7 +27,7 @@ to begin his master’s studies.
 
 Since then, the project has represented a motivating challenge, as it
 marked Arthur’s first experience working in a research area that had not
-been part of his undergraduate training. Despite the initial
+been part of his undergraduate research. Despite the initial
 difficulties, the transition proved to be highly enriching. Working
 closely with Leo and India throughout this project has been a valuable
 and rewarding experience, contributing significantly to Arthur’s
