@@ -250,20 +250,22 @@ equivalent source method to spherical coordinates, including revisions
 to its mathematical formulation to account for spherical geometry. The
 proposed framework enables consistent magnetic field modeling over large
 geographic areas.
-To improve the representation of the magnetic sources, a
-dual-layer configuration is adopted to separate long- and
-short-wavelength components. Cross-validation is employed to determine
-optimal hyperparameters for each layer, ensuring stable and balanced
-inversions. To guarantee computational feasibility for large and
-high-resolution datasets, a gradient-boosting strategy is incorporated
-into the inversion process, significantly improving computational
-performance. The method is evaluated using both synthetic and real data,
-with emphasis on large-scale spatial coverage, multiscale source
-distributions, and robustness to variations in sampling density. The
-final implementation is released as open-source software to support
+To improve the representation of magnetic sources, a dual-layer
+configuration is adopted to separate long- and short-wavelength
+components. Cross-validation is employed to determine optimal
+hyperparameters for each layer, ensuring stable and balanced inversions.
+To guarantee computational feasibility for large and high-resolution
+datasets, a gradient-boosting strategy is incorporated into the inversion
+process, significantly improving computational performance.
+Synthetic experiments demonstrate that the method remains stable and
+accurate for datasets containing up to 500,000 observations and enables
+the reliable recovery of magnetic field components from total-field
+anomaly data. The approach was further applied to more than 1.5 million
+real observations, confirming its scalability and robustness. The
+recovered field amplitude provides additional constraints for data
+interpretation and enhances the geological analysis.
+The final implementation is released as open-source software to support
 reproducibility and broader adoption.
-
-
 
 \newpage
 \section*{Resumo}
@@ -279,19 +281,25 @@ equivalentes para coordenadas esféricas, incluindo revisões em sua
 formulação matemática para considerar a geometria esférica. O arcabouço
 proposto permite a modelagem consistente do campo magnético em grandes
 áreas geográficas.
-Para aprimorar a representação de fontes magnéticas, é
-adotada uma configuração em duas camadas para separar componentes de
-comprimentos de onda longos e curtos. A validação cruzada é utilizada
-para determinar os hiperparâmetros ótimos de cada camada, garantindo
-inversões estáveis e equilibradas. Para assegurar viabilidade
+Para aprimorar a representação das fontes magnéticas, é adotada uma
+configuração em dupla camada, permitindo a separação entre componentes
+de longo e curto comprimento de onda. A validação cruzada é empregada
+para determinar os hiperparâmetros ótimos de cada camada, assegurando
+inversões estáveis e equilibradas. Para garantir a viabilidade
 computacional em conjuntos de dados extensos e de alta resolução, uma
 estratégia de gradient boosting é incorporada ao processo de inversão,
-melhorando significativamente o desempenho computacional. O método é
-avaliado por meio de conjuntos de dados sintéticos e reais, com ênfase em
-cobertura espacial em larga escala, distribuições multiescala de fontes e
-robustez a variações na densidade de amostragem. A implementação final é
-disponibilizada como software de código aberto, visando apoiar a
-reprodutibilidade e ampliar sua adoção.
+melhorando significativamente o desempenho computacional.
+Experimentos sintéticos demonstram que o método permanece estável e
+preciso para conjuntos de dados com até 500.000 observações, além de
+permitir a recuperação confiável das componentes do campo magnético a
+partir de dados de anomalia do campo total. A metodologia também foi
+aplicada a mais de 1,5 milhão de observações reais, confirmando sua
+escalabilidade e robustez. A amplitude do campo recuperado fornece
+restrições adicionais para a interpretação dos dados e aprimora a
+análise geológica.
+A implementação final é disponibilizada como software de código aberto,
+visando apoiar a reprodutibilidade e ampliar sua adoção.
+
 
 
 
