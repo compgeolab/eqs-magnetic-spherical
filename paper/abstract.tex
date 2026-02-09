@@ -1,17 +1,26 @@
-The equivalent source method is widely used for processing and interpolating
-magnetic data, particularly in airborne surveys. However, implementations
-based on Cartesian coordinates present limitations at regional and global
-scales, where Earth curvature introduces geometric inconsistencies that affect
-data integration and modeling accuracy.
-To address this problem, this study proposes an adaptation of the magnetic
-equivalent source method to spherical coordinates, including revisions to its
-mathematical formulation to account for spherical geometry. The proposed
-framework enables consistent magnetic field modeling over large geographic
-areas.
-To ensure computational feasibility for large and high-resolution datasets,
-a gradient-boosting strategy is incorporated into the inversion process,
-improving efficiency and prediction performance.
-The method is evaluated using synthetic models, with emphasis on heterogeneous
-data coverage, variable observation heights, and complex source distributions.
+The equivalent source method is widely used for processing and
+interpolating magnetic data, particularly in airborne surveys. However,
+implementations based on Cartesian coordinates present limitations at
+regional and global scales, where Earth curvature introduces geometric
+inconsistencies that affect data integration and modeling accuracy. To
+address this problem, this study proposes an adaptation of the magnetic
+equivalent source method to spherical coordinates, including revisions
+to its mathematical formulation to account for spherical geometry. The
+proposed framework enables consistent magnetic field modeling over large
+geographic areas.
+To improve the representation of magnetic sources, a dual-layer
+configuration is adopted to separate long- and short-wavelength
+components. Cross-validation is employed to determine optimal
+hyperparameters for each layer, ensuring stable and balanced inversions.
+To guarantee computational feasibility for large and high-resolution
+datasets, a gradient-boosting strategy is incorporated into the inversion
+process, significantly improving computational performance.
+Synthetic experiments demonstrate that the method remains stable and
+accurate for datasets containing up to 500,000 observations and enables
+the reliable recovery of magnetic field components from total-field
+anomaly data. The approach was further applied to more than 1.5 million
+real observations, confirming its scalability and robustness. The
+recovered field amplitude provides additional constraints for data
+interpretation and enhances the geological analysis.
 The final implementation is released as open-source software to support
 reproducibility and broader adoption.

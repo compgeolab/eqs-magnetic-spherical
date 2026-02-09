@@ -45,17 +45,21 @@ equivalent source method to spherical coordinates, including revisions
 to its mathematical formulation to account for spherical geometry. The
 proposed framework enables consistent magnetic field modeling over large
 geographic areas.
-To improve the representation of the magnetic sources, a
-dual-layer configuration is adopted to separate long- and
-short-wavelength components. Cross-validation is employed to determine
-optimal hyperparameters for each layer, ensuring stable and balanced
-inversions. To guarantee computational feasibility for large and
-high-resolution datasets, a gradient-boosting strategy is incorporated
-into the inversion process, significantly improving computational
-performance. The method is evaluated using both synthetic and real data,
-with emphasis on large-scale spatial coverage, multiscale source
-distributions, and robustness to variations in sampling density. The
-final implementation is released as open-source software to support
+To improve the representation of magnetic sources, a dual-layer
+configuration is adopted to separate long- and short-wavelength
+components. Cross-validation is employed to determine optimal
+hyperparameters for each layer, ensuring stable and balanced inversions.
+To guarantee computational feasibility for large and high-resolution
+datasets, a gradient-boosting strategy is incorporated into the inversion
+process, significantly improving computational performance.
+Synthetic experiments demonstrate that the method remains stable and
+accurate for datasets containing up to 500,000 observations and enables
+the reliable recovery of magnetic field components from total-field
+anomaly data. The approach was further applied to more than 1.5 million
+real observations, confirming its scalability and robustness. The
+recovered field amplitude provides additional constraints for data
+interpretation and enhances the geological analysis.
+The final implementation is released as open-source software to support
 reproducibility and broader adoption.
 
 ## License
