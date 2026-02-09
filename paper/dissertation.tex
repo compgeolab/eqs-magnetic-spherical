@@ -208,44 +208,62 @@ Por fim, agradeço à minha namorada Marina, por sua paciência, parceria e apoi
 
 \newpage
 \section*{Abstract}
-The equivalent source method is widely used for processing and interpolating
-magnetic data, particularly in airborne surveys. However, implementations
-based on Cartesian coordinates present limitations at regional and global
-scales, where Earth curvature introduces geometric inconsistencies that affect
-data integration and modeling accuracy.
-To address this problem, this study proposes an adaptation of the magnetic
-equivalent source method to spherical coordinates, including revisions to its
-mathematical formulation to account for spherical geometry. The proposed
-framework enables consistent magnetic field modeling over large geographic
-areas.
-To ensure computational feasibility for large and high-resolution datasets,
-a gradient-boosting strategy is incorporated into the inversion process,
-improving efficiency and prediction performance.
-The method is evaluated using synthetic models, with emphasis on heterogeneous
-data coverage, variable observation heights, and complex source distributions.
-The final implementation is released as open-source software to support
+
+\section*{Abstract}
+
+The equivalent source method is widely used for processing and
+interpolating magnetic data, particularly in airborne surveys. However,
+implementations based on Cartesian coordinates present limitations at
+regional and global scales, where Earth curvature introduces geometric
+inconsistencies that affect data integration and modeling accuracy. To
+address this problem, this study proposes an adaptation of the magnetic
+equivalent source method to spherical coordinates, including revisions
+to its mathematical formulation to account for spherical geometry. The
+proposed framework enables consistent magnetic field modeling over large
+geographic areas.
+To improve the representation of the magnetic sources, a
+dual-layer configuration is adopted to separate long- and
+short-wavelength components. Cross-validation is employed to determine
+optimal hyperparameters for each layer, ensuring stable and balanced
+inversions. To guarantee computational feasibility for large and
+high-resolution datasets, a gradient-boosting strategy is incorporated
+into the inversion process, significantly improving computational
+performance. The method is evaluated using both synthetic and real data,
+with emphasis on large-scale spatial coverage, multiscale source
+distributions, and robustness to variations in sampling density. The
+final implementation is released as open-source software to support
 reproducibility and broader adoption.
+
+
 
 \newpage
 \section*{Resumo}
-O método de fontes equivalentes é amplamente utilizado no processamento e na
-interpolação de dados magnéticos, especialmente em levantamentos aeromagnéticos.
-Entretanto, implementações baseadas em coordenadas cartesianas apresentam
-limitações em escalas regionais e globais, nas quais a curvatura da Terra
-introduz inconsistências geométricas que afetam a integração dos dados e a
-precisão da modelagem.
-Para contornar esse problema, este estudo propõe uma adaptação do método de
-fontes equivalentes para coordenadas esféricas, incluindo revisões em sua
+
+O método de fontes equivalentes é amplamente utilizado no processamento e
+na interpolação de dados magnéticos, especialmente em levantamentos
+aeromagnéticos. Entretanto, implementações baseadas em coordenadas
+cartesianas apresentam limitações em escalas regionais e globais, nas
+quais a curvatura da Terra introduz inconsistências geométricas que
+afetam a integração dos dados e a precisão da modelagem. Para contornar
+esse problema, este estudo propõe uma adaptação do método de fontes
+equivalentes para coordenadas esféricas, incluindo revisões em sua
 formulação matemática para considerar a geometria esférica. O arcabouço
-proposto permite a modelagem consistente do campo magnético em grandes áreas
-geográficas.
-Para garantir viabilidade computacional em conjuntos de dados extensos e de
-alta resolução, uma estratégia de gradient boosting é incorporada ao processo
-de inversão, melhorando a eficiência e o desempenho das predições.
-O método é avaliado por meio de modelos sintéticos, com ênfase em cobertura
-heterogênea dos dados, alturas variáveis de observação e distribuições
-complexas de fontes. A implementação final é disponibilizada como software de
-código aberto, visando apoiar a reprodutibilidade e ampliar sua adoção.
+proposto permite a modelagem consistente do campo magnético em grandes
+áreas geográficas.
+Para aprimorar a representação de fontes magnéticas, é
+adotada uma configuração em duas camadas para separar componentes de
+comprimentos de onda longos e curtos. A validação cruzada é utilizada
+para determinar os hiperparâmetros ótimos de cada camada, garantindo
+inversões estáveis e equilibradas. Para assegurar viabilidade
+computacional em conjuntos de dados extensos e de alta resolução, uma
+estratégia de gradient boosting é incorporada ao processo de inversão,
+melhorando significativamente o desempenho computacional. O método é
+avaliado por meio de conjuntos de dados sintéticos e reais, com ênfase em
+cobertura espacial em larga escala, distribuições multiescala de fontes e
+robustez a variações na densidade de amostragem. A implementação final é
+disponibilizada como software de código aberto, visando apoiar a
+reprodutibilidade e ampliar sua adoção.
+
 
 
 \listoffigures
