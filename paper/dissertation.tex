@@ -228,6 +228,9 @@ Agradeço também a todos os professores e técnicos do Instituto de
 Astronomia, Geofísica e Ciências Atmosféricas, pela dedicação, ensino e
 suporte ao longo da minha formação.
 
+Agradeço a  Coordenação de Aperfeiçoamento de Pessoal de Nível Superior (CAPES) pela bolsa concedida
+durante os dois anos do mestrado.
+
 Por fim, agradeço à minha namorada Marina, por sua paciência, parceria e
 apoio incondicional, mesmo nos meus momentos mais difíceis e apesar da
 distância, seja em Formosa, São Paulo ou São Luís. Obrigado por sempre me
@@ -865,11 +868,11 @@ Geological Survey of Brazil (CPRM) through the REATE platform at
         \textbf{a)} True total-field anomaly.
         \textbf{b)} Deep total-field anomaly, capturing the long-wavelength
         regional field.
-        \textbf{c)} Shallow total-field anomaly, capturing the short-wavelength
+        \textbf{c)} Deep total-field anomaly, predicted on all data points.
+        \textbf{d)} Shallow total-field anomaly, capturing the short-wavelength
         local anomalies.
-        \textbf{d)} Final residuals after combining both layers.
-        \textbf{e)} Residuals of the deep layer.
-        \textbf{f)} Residuals of the shallow layer.}
+        \textbf{e)} Predicted total-field anomaly.
+        \textbf{f)} Residuals of the predicted model.}
     \label{fig_decomposition}
 \end{figure}
 
@@ -895,7 +898,7 @@ Geological Survey of Brazil (CPRM) through the REATE platform at
         \textbf{(e-h)} shows the true synthetic fields (``True'') for comparison.
         The third row \textbf{(i-l)} shows the final residuals (``Residuals"),
         corresponding to the difference between the true and predicted
-        fields, demonstrating the accuracy of the inversion.}
+        fields.}
     \label{fig_grid_results}
 \end{figure}
 
@@ -1067,7 +1070,8 @@ proposed methodology for processing large-scale magnetic datasets.
     \centering
     \includegraphics[width=1\linewidth]{figures/real-data-tfa-norm-bcomponents.jpeg}
     \caption{Predicted magnetic field for the Paraná Basin dataset.
-    (\textbf{a}) Total-field anomaly. (\textbf{b--d}) East, north, and upward
+    (\textbf{a}) Total-field anomaly. 
+    (\textbf{b}) Amplitude of the anomalous magnetic field. (\textbf{d--f}) East, north, and upward
     components of the magnetic field. The
     smooth spatial behavior and coherence between components indicate the
     numerical stability of the proposed modeling approach.}
