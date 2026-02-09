@@ -19,13 +19,44 @@ presented in:
 
 ## About
 
-A little bit about this paper, how it came about, and what are the main
-contributions. Also include a summary figure or graphical abstract for this
-paper.
+The initial idea for this project emerged during a meeting between Arthur
+and Prof. Leo on January 22, 2024. In this meeting, Leo presented his
+preliminary thoughts on the topic, and Arthur immediately embraced the
+proposal. Shortly afterward, Arthur moved from Formosa, Goiás, to São Paulo
+to begin his master’s studies.
+
+Since then, the project has represented a motivating challenge, as it
+marked Arthur’s first experience working in a research area that had not
+been part of his undergraduate training. Despite the initial
+difficulties, the transition proved to be highly enriching. Working
+closely with Leo and India throughout this project has been a valuable
+and rewarding experience, contributing significantly to Arthur’s
+academic and professional development.
 
 ## Abstract
 
-The paper abstract. Paste it here once it's written.
+The equivalent source method is widely used for processing and
+interpolating magnetic data, particularly in airborne surveys. However,
+implementations based on Cartesian coordinates present limitations at
+regional and global scales, where Earth curvature introduces geometric
+inconsistencies that affect data integration and modeling accuracy. To
+address this problem, this study proposes an adaptation of the magnetic
+equivalent source method to spherical coordinates, including revisions
+to its mathematical formulation to account for spherical geometry. The
+proposed framework enables consistent magnetic field modeling over large
+geographic areas.
+To improve the representation of the magnetic sources, a
+dual-layer configuration is adopted to separate long- and
+short-wavelength components. Cross-validation is employed to determine
+optimal hyperparameters for each layer, ensuring stable and balanced
+inversions. To guarantee computational feasibility for large and
+high-resolution datasets, a gradient-boosting strategy is incorporated
+into the inversion process, significantly improving computational
+performance. The method is evaluated using both synthetic and real data,
+with emphasis on large-scale spatial coverage, multiscale source
+distributions, and robustness to variations in sampling density. The
+final implementation is released as open-source software to support
+reproducibility and broader adoption.
 
 ## License
 
