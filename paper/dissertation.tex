@@ -347,26 +347,51 @@ sparsity-inducing transformations using wavelets and quadtree discretization
 deconvolution exploiting Block-Toeplitz Toeplitz-block (BTTB) structures
 \citep{Takahashi2020,Takahashi2022}.
 
-Most equivalent source approaches have been traditionally formulated in Cartesian
-coordinates, which are adequate for local studies but become increasingly distorted
-when applied to regional or continental scales.
-As the survey area increases, the Earth's curvature becomes non-negligible, and
-projecting data onto a flat grid leads to inaccuracies in area and shape.
-Consequently, spherical formulations are geometrically more appropriate for
-large-scale modeling.
+Most equivalent source approaches are formulated in Cartesian
+coordinates, which are mathematically valid regardless of scale.
+The limitation does not arise from the Cartesian formulation
+itself, but from representing data distributed over the curved
+Earth on a planar surface. For small areas, this approximation is
+adequate. However, as the spatial extent increases, neglecting
+Earth curvature introduces geometric inconsistencies in distances,
+areas, and relative positioning. In this context, spherical
+formulations provide a geometrically consistent framework for
+regional to continental-scale modeling.
 
-The equivalent source method in spherical coordinates was first introduced by
-\citet{VonFrese1981} as a computationally efficient alternative to spherical harmonics,
-which become expensive at high degrees, and to Fourier transforms, which require planar
-regridding of spherical data. Their approach relates potential field anomalies directly to
-a distribution of equivalent point sources on a sphere through least squares inversion,
-allowing the anomalies to be reproduced with far fewer parameters than spherical harmonics.
-This formulation is numerically efficient because, once the source coefficients are solved,
-continuation, differentiation, and filtering operations can be carried out by simply
-recomputing the anomaly of the same source distribution at new conditions. Moreover, they
-demonstrated that magnetic anomalies could be differentially reduced to the pole using
-equivalent dipoles, thus enabling pole reduction directly in the spherical domain without
-distortion.
+%The equivalent source method in spherical coordinates was first introduced by
+%\citet{VonFrese1981} as a computationally efficient alternative to spherical harmonics,
+%which become expensive at high degrees, and to Fourier transforms, which require planar
+%regridding of spherical data. Their approach relates potential field anomalies directly to
+%a distribution of equivalent point sources on a sphere through least squares inversion,
+%allowing the anomalies to be reproduced with far fewer parameters than spherical harmonics.
+%This formulation is numerically efficient because, once the source coefficients are solved,
+%continuation, differentiation, and filtering operations can be carried out by simply
+%recomputing the anomaly of the same source distribution at new conditions. Moreover, they
+%demonstrated that magnetic anomalies could be differentially reduced to the pole using
+%equivalent dipoles, thus enabling pole reduction directly in the spherical domain without
+%distortion.
+
+The use of equivalent sources for modeling potential fields evolved through
+various formulations from the late 1960s to the early 1980s, transitioning from
+Cartesian point masses and lines of dipoles to spherical distributions. For
+instance, \citet{Mayhew1979} successfully applied an equivalent source
+representation using arrays of dipoles and spherical prisms to model and invert
+satellite magnetic anomaly data. Building upon these foundational works,
+\citet{VonFrese1981} developed a systematic procedure for the comprehensive
+geologic analysis of both gravity and magnetic anomalies in spherical
+coordinates. They formalized the equivalent point source inversion as a
+computationally efficient alternative to spherical harmonics, which become
+expensive at high degrees, and to Fourier transforms, which require planar
+regridding of spherical data. Their approach relates potential field anomalies
+directly to a distribution of equivalent point sources on a sphere through
+least squares matrix inversion. This formulation is numerically efficient
+because, once the source coefficients are solved, operations such as
+continuation, spatial differentiation, and differential magnetic pole
+reductions can be carried out by simply recomputing the anomaly using the
+corresponding geometric point source function. Moreover, they demonstrated
+that magnetic anomalies could be differentially reduced to the pole directly
+in the spherical domain, avoiding the distortions associated with Cartesian
+reregistration.
 
 More recently, \citet{Kother2015} extended the regularized monopole
 approach of \citet{Obrien1994} to global lithospheric field modelling
@@ -431,7 +456,7 @@ This section details the mathematical method for computing the magnetic field ve
 $\vec{\mathbf{B}}$ from a magnetic dipole source, based on the classical works of
 \citet{VonFrese1981} and \citet{Langel1998}. The formulation requires the definition of three
 distinct coordinate systems. The primary reference is a geocentric Cartesian system (X, Y, Z),
-within which a geocentric spherical system ($r, \theta, \phi$) is used to formulate the physics
+within which a geocentric spherical system ($r, \theta, \lambda$) is used to formulate the physics
 (Figure~\ref{fig_coordinate_systems}a). However, as airborne survey data are typically provided in
 a geodetic system (latitude $\varphi$, longitude $\lambda$, height $h$), this system must also be
 considered. Figure~\ref{fig_coordinate_systems}b illustrates the geometric relationship between the
@@ -503,6 +528,7 @@ observation points, are
 Once the magnetic moment is expressed in the observer's reference frame, the magnetic field vector
 $\vec{\mathbf{B}}$ can be calculated. The complete relationship is a linear transformation given by
 \begin{equation}
+\label{eq:magnetic_field_sph}
     \vec{\mathbf{B}} = \frac{\mu_0}{4\pi} \mathbf{H} \mathbf{R} \mathbf{m'}.
 \end{equation}
 Here, $\mu_0$ is the magnetic permeability of free space, and $\mathbf{H}$ is the kernel matrix that
@@ -542,6 +568,15 @@ Equations~\ref{eq:H_lambdar} and \ref{eq:H_lambdatheta} include a correction to 
 During our implementation, a discrepancy was identified in the direction cosines used for these
 specific terms. The equations presented here use the correct dot products for these components.
 
+These expressions are based on the formulation presented by \citet[see Table 5.2]{Langel1998}. 
+However, the components
+$H_{\lambda r}$ and $H_{\lambda \theta}$ in Equations~\ref{eq:H_lambdar} and \ref{eq:H_lambdatheta}
+incorporate the correction proposed by \citet{Dyment1998} During our implementation, we verified that
+this correction is consistent with the expressions adopted in
+subsequent studies. In particular, a discrepancy in the direction
+cosines associated with these terms was identified and corrected
+accordingly.
+
 In these expressions, $\ell$ is the Euclidean distance between the observation point $P$ and the
 source point $Q$, which can be computed in spherical geometry as
 
@@ -567,20 +602,20 @@ is first rotated into the local spherical frame to obtain the spherical componen
 
 \begin{equation}
 \begin{bmatrix}
-    m_E \\
-    m_N \\
-    m_U
+    m_{\lambda} \\
+    m_{\theta} \\
+    m_{r}
 \end{bmatrix}
 =
 \begin{bmatrix}
-    0 & 0 & 1\\
-    \sin(\Delta\Phi) & \cos(\Delta\Phi) & 0 \\
-    -\sin(\Delta\Phi) & \cos(\Delta\Phi) & 0 \\
+    1 & 0 & 0\\
+    0 & \cos(\Delta\Phi) & \sin(\Delta\Phi) \\
+    0 & -\sin(\Delta\Phi) & \cos(\Delta\Phi) 
 \end{bmatrix}
 \begin{bmatrix}
-    B_{\lambda} \\
-    B_{\theta} \\
-    B_{r}
+    m_E \\
+    m_N \\
+    m_U
 \end{bmatrix} .
 \end{equation}
 
@@ -591,20 +626,20 @@ of the rotation matrix
 
 \begin{equation}
 \begin{bmatrix}
-    B_\lambda \\
-    B_\theta \\
-    B_r
-\end{bmatrix}
-=
-\begin{bmatrix}
-    0 & 0 & 1 \\
-    -\sin(-\Delta\Phi) & -\cos(\Delta\Phi) & 0 \\
-    \sin(\Delta\Phi) & -\cos(\Delta\Phi) & 0
-\end{bmatrix}
-\begin{bmatrix}
     B_E \\
     B_N \\
     B_U
+\end{bmatrix}
+=
+\begin{bmatrix}
+    1 & 0 & 0 \\
+    0 &\cos(\Delta\Phi) & -\sin(\Delta\Phi) \\
+    0 &\sin(\Delta\Phi) & \cos(\Delta\Phi)
+\end{bmatrix}
+\begin{bmatrix}
+    B_\lambda \\
+    B_\theta \\
+    B_r
 \end{bmatrix}.
 \end{equation}
 
@@ -616,7 +651,7 @@ In this work, we use this technique to model the total-field magnetic anomaly by
 moment magnitudes of a set of dipole sources.
 
 Let $\mathbf{d}^o$ be the vector containing $N$ observations of the total-field anomaly. As derived
-in studies like \citet{Uppal2025}, the total-field anomaly, $\Delta T$, can be approximated as the
+in studies like \citet[][p. 179]{Blakely1995}, the total-field anomaly, $\Delta T$, can be approximated as the
 projection of the anomalous magnetic field vector, $\vec{\mathbf{B}}$, onto the unit vector of the
 geomagnetic main field, $\hat{\mathbf{F}}$
 
@@ -631,16 +666,17 @@ observation is given by the summation
 \begin{equation}
     d_i = \sum_{j=1}^{M} A_{ij} m_j,
 \end{equation}
-
+\noindent
 where $m_j$ is the magnetic moment magnitude of the $j$-th source, and $A_{ij}$ is the element of
 the sensitivity matrix. This element is defined as
 
 \begin{equation}
     A_{ij} = \vec{\mathbf{b}_{ij}} \cdot \hat{\mathbf{F}},
 \end{equation}
-
+\noindent
 where $\vec{\mathbf{b}_{ij}}$ is the magnetic field vector generated by the $j$-th source with a
-unit magnetic moment at the $i$-th observation point, as derived in the previous section.
+unit magnetic moment at the $i$-th observation point, as derived in the previous section in 
+equation~\ref{eq:magnetic_field_sph}.
 
 Writing this system of equations for all $N$ observation points results in the matrix form
 
@@ -673,8 +709,8 @@ Tikhonov regularization term, leading to a damped least-squares formulation \cit
 its scaled form, the objective function is
 
 \begin{equation}
-    \beta(\mathbf{m}) = [\mathbf{d}^o - \mathbf{U}\mathbf{m}]^\mathsf{T}
-    \mathbf{W} [\mathbf{d}^o - \mathbf{U}\mathbf{m}] + \lambda \, \mathbf{m}^\mathsf{T}\mathbf{m},
+    \beta(\mathbf{c}) = [\mathbf{d}^o - \mathbf{U}\mathbf{c}]^\mathsf{T}
+    \mathbf{W} [\mathbf{d}^o - \mathbf{U}\mathbf{c}] + \lambda \, \mathbf{c}^\mathsf{T}\mathbf{c},
     \label{eq:objective-function}
 \end{equation}
 
@@ -701,7 +737,7 @@ typically vary between $10^{-6}$ and $10^{4}$.
 Minimizing the objective function in Equation~\ref{eq:objective-function} leads to the normal equations
 
 \begin{equation}
-    (\mathbf{U}^\mathsf{T}\mathbf{W}\mathbf{U} + \lambda \mathbf{I}) \, \hat{\mathbf{m}}
+    (\mathbf{U}^\mathsf{T}\mathbf{W}\mathbf{U} + \lambda \mathbf{I}) \, \hat{\mathbf{c}}
     = \mathbf{U}^\mathsf{T}\mathbf{W}\mathbf{d}^o,
     \label{eq:normal-equations}
 \end{equation}
@@ -711,7 +747,7 @@ whose solution gives the scaled coefficients $\hat{\mathbf{m}}$. The estimated m
 then obtained by removing the scaling
 
 \begin{equation}
-    \hat{\mathbf{c}} = \mathbf{S}^{-1}\hat{\mathbf{m}}.
+    \hat{\mathbf{m}} = \mathbf{S}^{-1}\hat{\mathbf{c}}.
 \end{equation}
 
 Once the vector of moments $\hat{\mathbf{c}}$ is estimated, it can be used not only to reproduce the
@@ -719,7 +755,7 @@ observed total-field anomaly but also to compute the full anomalous magnetic fie
 and its components (e.g., $B_r, B_\theta, B_\lambda$) at any location
 
 \begin{equation}
-    \vec{\mathbf{B}}({r, \theta, \lambda}) = \sum_{j=1}^{M} \vec{\mathbf{b}_{j}}({r, \theta, \lambda}) \, \hat{c}_j.
+    \vec{\mathbf{B}}({r, \theta, \lambda}) = \sum_{j=1}^{M} \vec{\mathbf{b}_{j}}({r, \theta, \lambda}) \, \hat{m}_j.
 \end{equation}
 
 This capability of retrieving the vector field directly from the equivalent sources makes the method
@@ -1055,10 +1091,7 @@ proposed methodology for processing large-scale magnetic datasets.
     anomaly for the same region used in the Paraná Basin ANP data.
     \textbf{a--d)} Observed total-field anomaly gridded from different
     block-mean decimations. \textbf{e--h)} Predicted total-field anomaly
-    using the spherical dual-layer gradient-boosted equivalent sources. The
-    convergence of the predicted grids as the block size approaches the
-    final grid resolution demonstrates the robustness of the method to
-    sampling-density variations.}
+    using the spherical dual-layer gradient-boosted equivalent sources.}
     \label{fig_real_blockmean}
 \end{figure}
 
