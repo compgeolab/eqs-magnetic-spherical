@@ -348,15 +348,22 @@ deconvolution exploiting Block-Toeplitz Toeplitz-block (BTTB) structures
 \citep{Takahashi2020,Takahashi2022}.
 
 Most equivalent source approaches are formulated in Cartesian
-coordinates, which are mathematically valid regardless of scale.
-The limitation does not arise from the Cartesian formulation
+coordinates and applied to relatively small areas.
+In these cases, data which are naturally registered using geodetic or geocentric
+spherical coordinates are projected onto a planar surface using a chosen map
+projection to use the Cartesian formulation.
+An issue arises when dealing with large areas where distortions in distances,
+areas, or relative positioning from the projection become significant.
+Thus, the limitation does not arise from the Cartesian formulation
 itself, but from representing data distributed over the curved
-Earth on a planar surface. For small areas, this approximation is
-adequate. However, as the spatial extent increases, neglecting
-Earth curvature introduces geometric inconsistencies in distances,
-areas, and relative positioning. In this context, spherical
-formulations provide a geometrically consistent framework for
-regional to continental-scale modeling.
+Earth on a planar surface. In this context, a spherical
+formulation of the forward and inverse problem is more suitable for
+regional to continental-scale modeling because it avoids the projection and its
+associated distortions.
+While a Cartesian formulation could still be applied using a geocentric
+Cartesian system, the mathematical and computational implementation of the
+forward problem is more time consuming than a spherical formulation because of
+the many coordinate conversions and rotations involved \citep{WildPfeiffer2008}.
 
 %The equivalent source method in spherical coordinates was first introduced by
 %\citet{VonFrese1981} as a computationally efficient alternative to spherical harmonics,
@@ -371,28 +378,20 @@ regional to continental-scale modeling.
 %equivalent dipoles, thus enabling pole reduction directly in the spherical domain without
 %distortion.
 
-The use of equivalent sources for modeling potential fields evolved through
-various formulations from the late 1960s to the early 1980s, transitioning from
-Cartesian point masses and lines of dipoles to spherical distributions. For
+The use of equivalent sources for modeling the Earth's magnetic field evolved through
+various formulations from the late 1960s to the early 1980s
+CITEP COM EXEMPLOS. For
 instance, \citet{Mayhew1979} successfully applied an equivalent source
-representation using arrays of dipoles and spherical prisms to model and invert
-satellite magnetic anomaly data. Building upon these foundational works,
+representation using arrays of dipoles and spherical prisms to model
+satellite magnetic anomaly data. Later,
 \citet{VonFrese1981} developed a systematic procedure for the comprehensive
 geologic analysis of both gravity and magnetic anomalies in spherical
 coordinates. They formalized the equivalent point source inversion as a
 computationally efficient alternative to spherical harmonics, which become
-expensive at high degrees, and to Fourier transforms, which require planar
-regridding of spherical data. Their approach relates potential field anomalies
+computationally challenging at high degrees, and to Fourier transforms, which require planar
+projection of spherical data. Their approach relates potential field anomalies
 directly to a distribution of equivalent point sources on a sphere through
-least squares matrix inversion. This formulation is numerically efficient
-because, once the source coefficients are solved, operations such as
-continuation, spatial differentiation, and differential magnetic pole
-reductions can be carried out by simply recomputing the anomaly using the
-corresponding geometric point source function. Moreover, they demonstrated
-that magnetic anomalies could be differentially reduced to the pole directly
-in the spherical domain, avoiding the distortions associated with Cartesian
-reregistration.
-
+least squares matrix inversion.
 More recently, \citet{Kother2015} extended the regularized monopole
 approach of \citet{Obrien1994} to global lithospheric field modelling
 using CHAMP satellite data. They placed $\sim30,000$ monopoles on
@@ -568,7 +567,7 @@ with the individual elements given by
 %During our implementation, a discrepancy was identified in the direction cosines used for these
 %specific terms. The equations presented here use the correct dot products for these components.
 
-These expressions are based on the formulation presented by \citet[see Table 5.2]{Langel1998}. 
+These expressions are based on the formulation presented by \citet[see Table 5.2]{Langel1998}.
 However, the components
 $H_{\lambda r}$ and $H_{\lambda \theta}$ in Equations~\ref{eq:H_lambdar} and \ref{eq:H_lambdatheta}
 incorporate the correction proposed by \citet{Dyment1998} During our implementation, we verified that
@@ -610,7 +609,7 @@ is first rotated into the local spherical frame to obtain the spherical componen
 \begin{bmatrix}
     1 & 0 & 0\\
     0 & \cos(\Delta\Phi) & \sin(\Delta\Phi) \\
-    0 & -\sin(\Delta\Phi) & \cos(\Delta\Phi) 
+    0 & -\sin(\Delta\Phi) & \cos(\Delta\Phi)
 \end{bmatrix}
 \begin{bmatrix}
     m_E \\
@@ -675,7 +674,7 @@ the sensitivity matrix. This element is defined as
 \end{equation}
 \noindent
 where $\vec{\mathbf{b}_{ij}}$ is the magnetic field vector generated by the $j$-th source with a
-unit magnetic moment at the $i$-th observation point, as derived in the previous section in 
+unit magnetic moment at the $i$-th observation point, as derived in the previous section in
 equation~\ref{eq:magnetic_field_sph}.
 
 Writing this system of equations for all $N$ observation points results in the matrix form
@@ -1112,7 +1111,7 @@ proposed methodology for processing large-scale magnetic datasets.
     \centering
     \includegraphics[width=1\linewidth]{figures/real-data-tfa-norm-bcomponents.jpeg}
     \caption{Predicted magnetic field for the Paraná Basin dataset.
-    (\textbf{a}) Total-field anomaly. 
+    (\textbf{a}) Total-field anomaly.
     (\textbf{b}) Amplitude of the anomalous magnetic field. (\textbf{d--f}) East, north, and upward
     components of the magnetic field. The
     smooth spatial behavior and coherence between components indicate the
