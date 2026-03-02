@@ -379,9 +379,9 @@ the many coordinate conversions and rotations involved \citep{WildPfeiffer2008}.
 %distortion.
 
 The use of equivalent sources for modeling the Earth's magnetic field evolved through
-various formulations from the late 1960s to the early 1980s
-CITEP COM EXEMPLOS. For
-instance, \citet{Mayhew1979} successfully applied an equivalent source
+various formulations from the late 1960s to the early 1980s 
+\citep{Alldredge1969, Mayhew1979, Alldredge1969,Mayhew1980, Reilly1978, Mayhew1982}.
+For instance, \citet{Mayhew1979} successfully applied an equivalent source
 representation using arrays of dipoles and spherical prisms to model
 satellite magnetic anomaly data. Later,
 \citet{VonFrese1981} developed a systematic procedure for the comprehensive
@@ -596,49 +596,49 @@ converted to their spherical equivalents using the direct, closed-form algebraic
 Second, vector quantities are rotated between the local reference frames. The rotation is defined by
 the angular difference between the geodetic and geocentric latitudes,
 $\Delta\Phi = \varphi - \phi$ (Figure~\ref{fig_coordinate_systems}b). As part of our workflow, the
-input magnetic moment vector of a source, $\vec{\mathbf{m}}'$, with geodetic components $(E', N', U')$,
-is first rotated into the local spherical frame to obtain the spherical components $(m_r, m_\theta, m_\lambda)$
+input magnetic moment vector of a source, $\vec{\mathbf{m}}'$, with geodetic components $(m_{x^{\dagger}}, m_{y^{\dagger}}, m_{z^{\dagger}})$,
+is first rotated into the local spherical frame to obtain the spherical components $(m_x, m_y, m_z)$
 
 \begin{equation}
 \begin{bmatrix}
-    m_{\lambda} \\
-    m_{\theta} \\
-    m_{r}
+    m_{x} \\
+    m_{y} \\
+    m_{z}
 \end{bmatrix}
 =
 \begin{bmatrix}
-    1 & 0 & 0\\
-    0 & \cos(\Delta\Phi) & \sin(\Delta\Phi) \\
-    0 & -\sin(\Delta\Phi) & \cos(\Delta\Phi)
+    \cos(\Delta\Phi)  & 0 & \sin(\Delta\Phi) \\
+    0 & 1 & 0\\
+    -\sin(\Delta\Phi) & 0 & \cos(\Delta\Phi)
 \end{bmatrix}
 \begin{bmatrix}
-    m_E \\
-    m_N \\
-    m_U
+    m_{x^{\dagger}} \\
+    m_{y^{\dagger}} \\
+    m_{z^{\dagger}}
 \end{bmatrix} .
 \end{equation}
 
 After the main physical calculation, the resulting magnetic field vector $\vec{\mathbf{B}}$, with
-spherical components $(B_r, B_\theta, B_\lambda)$, is rotated back into the local geodetic frame to
-obtain the output components $(E, N, U)$. This inverse transformation is achieved using the transpose
+spherical components $(B_x, B_y, B_z)$, is rotated back into the local geodetic frame to
+obtain the output components $(B_{x^{\dagger}}, B_{y^{\dagger}}, B_{z^{\dagger}})$. This inverse transformation is achieved using the transpose
 of the rotation matrix
 
 \begin{equation}
 \begin{bmatrix}
-    B_E \\
-    B_N \\
-    B_U
+    B_{x^{\dagger}} \\
+    B_{y^{\dagger}} \\
+    B_{z^{\dagger}}
 \end{bmatrix}
 =
 \begin{bmatrix}
-    1 & 0 & 0 \\
-    0 &\cos(\Delta\Phi) & -\sin(\Delta\Phi) \\
-    0 &\sin(\Delta\Phi) & \cos(\Delta\Phi)
+    \cos(\Delta\Phi) & 0 & -\sin(\Delta\Phi) \\
+    0 & 1 & 0 \\
+    \sin(\Delta\Phi) & 0 & \cos(\Delta\Phi)
 \end{bmatrix}
 \begin{bmatrix}
-    B_\lambda \\
-    B_\theta \\
-    B_r
+    B_x \\
+    B_y \\
+    B_z
 \end{bmatrix}.
 \end{equation}
 
