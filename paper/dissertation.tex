@@ -258,8 +258,8 @@ hyperparameters for each layer, ensuring stable and balanced inversions.
 To guarantee computational feasibility for large and high-resolution
 datasets, a gradient-boosting strategy is incorporated into the inversion
 process, significantly improving computational performance.
-Synthetic experiments demonstrate that the method remains stable and
-accurate for datasets containing up to 500,000 observations and enables
+Synthetic experiments demonstrate that the method remains stable and accurate for large-scale datasets, 
+with tests conducted on synthetic data containing up to 500,000 observations and enables
 the reliable recovery of magnetic field components from total-field
 anomaly data. The approach was further applied to more than 1.5 million
 real observations, confirming its scalability and robustness. The
@@ -837,8 +837,8 @@ This method respects the spatial structure of the data by ensuring independence 
 test sets. The survey area is first partitioned into non-overlapping spatial blocks. The cross-validation
 folds are then constructed using these entire blocks, rather than individual points. By training the
 model on one set of blocks and testing it on a spatially separate set, this approach forces the model
-to generalize. The resulting error metric is a much more honest estimate of how the model would perform
-when predicting for a new, unsurveyed area, which is the most realistic use-case scenario.
+to generalize. The resulting error metric of how the model would perform
+when predicting for a new, unsurveyed area, which is more realistic to use-case scenario.
 
 Our implementation for selecting the optimal set of hyperparameters follows the procedure detailed
 in Algorithm~\ref{alg:block-cv}. We define a grid of candidate values for the model hyperparameters.
@@ -1012,7 +1012,7 @@ algorithm applied to the residuals of the deep layer. A window size of
 inversion to the amount of RAM available.
 
 Performing cross-validation on the entire residual dataset would be
-computationally prohibitive due to the large number of observations.
+computationally heavy due to the large number of observations.
 However, since
 the deep layer removes most of the long-wavelength signal, the remaining
 residuals are dominated by local magnetic effects. Therefore, a
