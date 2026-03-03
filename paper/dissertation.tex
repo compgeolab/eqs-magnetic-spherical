@@ -946,12 +946,14 @@ Geological Survey of Brazil (CPRM) through the REATE platform at
     \label{fig_grid_results}
 \end{figure}
 
-To evaluate the performance and accuracy of the proposed methodology, we
-applied it to a synthetic magnetic dataset designed to reproduce realistic
-survey conditions. The model consists of multiple crustal sources with
-different geometries, depths, and magnetizations, generating both regional
-and local magnetic anomalies. The detailed configuration of the sources is
-provided in the supplementary material \citep{archive}.
+To evaluate the performance and accuracy of the proposed methodology, we applied
+it to a synthetic magnetic dataset designed to reproduce realistic survey
+conditions. The model consists of multiple crustal sources. Specifically, a set
+of dipoles and dikes with different orientations (W-E, SW-NE, and NW-SE)
+positioned at varying depths. These sources exhibit both remanent and induced
+magnetization, generating both regional and local magnetic anomalies. The
+detailed configuration of the sources is provided in the supplementary material
+\citep{archive}.
 
 A complex regional magnetic field was generated using a deep distribution of
 sources. Zero-mean Gaussian noise with a standard deviation corresponding to
@@ -1142,12 +1144,12 @@ Numerical variables in the dataset were averaged, while categorical and identifi
 were retained from the central record of each block. Records containing
 corrupted or inconsistent values were discarded. This procedure preserves
 along-line continuity while significantly reducing the dataset size. In
-addition, tie lines were removed because they exhibited
-inconsistent amplitude values, introducing spurious variations and systematic
+addition, tie lines were removed because they exhibited inconsistent amplitude values,
+being entirely positive and showing amplitudes ten times greater than the
+flight line data, introducing spurious variations and systematic
 distortions in the magnetic signal that could negatively affect the equivalent
 sources modeling. After this preprocessing step, the resulting dataset with
-1,636,695 observations is
-illustrated in Figure~\ref{fig_real_blockmean}a.
+1,636,695 observations is illustrated in Figure~\ref{fig_real_blockmean}a.
 
 Our target is to produce a regular grid at a constant height of 500~m and
 a grid spacing of $0.0023^{\circ}$ (approximately 250~m).
