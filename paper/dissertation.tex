@@ -760,6 +760,23 @@ and its components (e.g., $B_r, B_\theta, B_\lambda$) at any location
 This capability of retrieving the vector field directly from the equivalent sources makes the method
 particularly powerful for multi-scale magnetic modeling \citep{Li2020, Uppal2025}.
 
+To accurately model complex magnetic anomalies, we employ the dual-layer
+gradient-boosted equivalent sources method introduced by \citet{Uppal2025}, illustrated in Figure~\ref{fig:dual_layer_flowchart}, 
+this methodology first fits a deep layer of equivalent sources using block-averaged
+or decimated data to capture the regional, long-wavelength signals.
+Subsequently, a shallow layer is fitted to the residuals of the deep layer to
+resolve the short-wavelength components. The final predicted field
+is then obtained by combining the contributions from both layers.
+
+\begin{figure}[htpb]
+\centering
+\includegraphics[width=\textwidth]{figures/fluxogram-dual-layer.png}
+\caption{Flowchart of the dual-layer equivalent sources method,
+illustrating the data decimation, deep source fitting, residual
+calculation, and final grid prediction \citep{Uppal2025}.}
+\label{fig:dual_layer_flowchart}
+\end{figure}
+
 \section{Gradient boosting on the sphere}
 
 To address the computational challenges associated with inverting large-scale datasets, we adopt the
