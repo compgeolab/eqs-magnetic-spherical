@@ -3,3 +3,4 @@
 __pycache__
 paper/*.pdf
 data/parana-basin-magnetic-processed.csv
+data/*.asc
