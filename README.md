@@ -34,6 +34,23 @@ closely with Leo and India throughout this project has been a valuable
 and rewarding experience, contributing significantly to Arthur’s
 academic and professional development.
 
+## Plain language abstract
+
+Mapping the Earth's magnetic field using airplanes is a common
+technique, but traditional methods process this data as if the Earth were flat.
+Because our planet is round, projecting this information onto a flat surface
+introduces distortions, causing mapping errors over large areas. In this study,
+we updated the math behind these calculations to account for the Earth's actual
+curvature, allowing for accurate magnetic maps on a regional or global scale.
+To improve the results, we used a "dual-layer" model that captures both
+deep, broad magnetic features and shallow, detailed ones. Because mapping
+large areas involves massive amounts of data, we also added an advanced
+computational technique that allows computers to process the information much
+faster. We successfully tested our new method on over 1.5 million real
+observations, proving it is fast, reliable, and highly useful for
+understanding the geology of large regions. Finally, we released our software
+for free as open-source so anyone can use it.
+
 ## Abstract
 
 The equivalent source method is widely used for processing and
