@@ -24,5 +24,9 @@ show: $(PDF)
 		xdg-open $$fname ; \
 	done
 
+wordcount:
+	@echo -n "Main text + abstract: "
+	@echo $$((`detex content.tex | wc --words` + `detex abstract.tex | wc --words`))
+
 clean:
 	rm -f $(PDF)
