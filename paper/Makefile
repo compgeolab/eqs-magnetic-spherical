@@ -8,6 +8,10 @@ TEX = $(filter-out $(PDF:.pdf=.tex), $(wildcard *.tex))
 BIB = $(wildcard *.bib)
 FIG = $(wildcard figures/*)
 
+preprint: preprint.pdf
+
+dissertation: dissertation.pdf
+
 all: $(PDF)
 
 %.pdf: %.tex $(TEX) $(BIB) $(FIG)
