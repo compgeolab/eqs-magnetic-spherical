@@ -8,7 +8,8 @@ by
 This repository contains the data and source code used to produce the results
 presented in:
 
-> Reference of the paper and/or preprint.
+> Siqueira-Macedo, A., Uieda, L., Uppal, I. (2026). Magnetic dual-layer
+> equivalent sources on the sphere. EarthArXiv.
 
 |  | Info |
 |-:|:-----|
@@ -52,7 +53,7 @@ hyperparameters for each layer, ensuring stable and balanced inversions.
 To guarantee computational feasibility for large and high-resolution
 datasets, a gradient-boosting strategy is incorporated into the inversion
 process, significantly improving computational performance.
-Synthetic experiments demonstrate that the method remains stable and accurate for large-scale datasets, 
+Synthetic experiments demonstrate that the method remains stable and accurate for large-scale datasets,
 with tests conducted on synthetic data containing up to 500,000 observations and enables
 the reliable recovery of magnetic field components from total-field
 anomaly data. The approach was further applied to more than 1.5 million
