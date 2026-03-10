@@ -8,13 +8,12 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set a class and general configuration
-\documentclass[onecolumn,12pt,a4paper]{article}
+\documentclass[onecolumn,10pt,a4paper]{article}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Read in the title, authors, etc
 \input{information.tex}
-\input{variables.tex}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Import the required packages
@@ -30,7 +29,6 @@
 \usepackage{booktabs}
 \usepackage{microtype}
 \usepackage{siunitx}
-\usepackage[longend,linesnumbered,ruled]{algorithm2e}
 % To customize the title page
 \usepackage{titling}
 % For adding multiple authors
@@ -55,6 +53,11 @@
 \usepackage{ragged2e}
 % Add line numbers
 \usepackage{lineno}
+% To control hyphenation for individual blocks of text
+\usepackage{hyphenat}
+% To create algorithms
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Math shortcuts
@@ -114,8 +117,6 @@
 }
 \rfoot{%
   \FooterFont{}
-  Submitted to \Journal{}
-  \Separator{}
   \thepage\space of\space \pageref*{LastPage}
 }
 \renewcommand{\headrulewidth}{0pt}
@@ -133,22 +134,33 @@
     {\Affiliations}
     \\[0.3cm]
     {Submitted for publication to \textit{\Journal{}} on \SubmittedOn.}
-    \\[0.3cm]
-    {Resubmitted to \textit{\Journal{}} after revisions on \RevisionAOn.}
-    \\[0.3cm]
-    {Published in \textit{\Journal{}} on \PublishedOn.}
+    % \\[0.3cm]
+    % {Resubmitted to \textit{\Journal{}} after revisions on \RevisionAOn.}
+    % \\[0.3cm]
+    % {Published in \textit{\Journal{}} on \PublishedOn.}
 \end{FlushLeft}
 
 % Add line numbers
 \linenumbers
 
+\section*{Plain language abstract}
+
+\input{abstract-plain.tex}
+
 \section*{Abstract}
 
-\input{abstract}
+\input{abstract.tex}
 
-\vspace{0.5cm}
-\noindent
-\textbf{Keywords:} \Keywords{}
+\section*{Key points}
+
+\begin{enumerate}
+  \item Equivalent sources methods in Cartesian coordinates using map projections
+    introduce distortions at continental or global scales.
+  \item Our spherical dual-layer gradient-boosted equivalent sources method is
+    able to process over 1.5 million data points on modest hardware.
+  \item The three components of the anomalous magnetic field can be
+    independently and accurately recovered from total-field anomaly data.
+\end{enumerate}
 
 \input{content.tex}
 
