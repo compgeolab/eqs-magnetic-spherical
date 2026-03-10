@@ -258,7 +258,7 @@ hyperparameters for each layer, ensuring stable and balanced inversions.
 To guarantee computational feasibility for large and high-resolution
 datasets, a gradient-boosting strategy is incorporated into the inversion
 process, significantly improving computational performance.
-Synthetic experiments demonstrate that the method remains stable and accurate for large-scale datasets, 
+Synthetic experiments demonstrate that the method remains stable and accurate for large-scale datasets,
 with tests conducted on synthetic data containing up to 500,000 observations and enables
 the reliable recovery of magnetic field components from total-field
 anomaly data. The approach was further applied to more than 1.5 million
@@ -340,7 +340,7 @@ demanding in terms of both processing time and memory
 several strategies have been developed. These include methods
 based on moving data windows \citep{Leao1989,Soler2021,Uppal2025},
 column- and row-action updates \citep{Cordell1992,Mendonca1994,Guspi2009},
-reparametrization of the equivalent layer \citep{OliveiraJr2013,Mendonca2020},
+re\-para\-me\-trization of the equivalent layer \citep{OliveiraJr2013,Mendonca2020},
 sparsity-inducing transformations using wavelets and quadtree discretization
 \citep{Li2010,Barnes2011}, iterative methods using the full sensitivity matrix
 \citep{Xia1991,Xia1993,Siqueira2017,Jirigalatu2019}, and iterative or direct
@@ -379,8 +379,8 @@ the many coordinate conversions and rotations involved \citep{WildPfeiffer2008}.
 %distortion.
 
 The use of equivalent sources for modeling the Earth's magnetic field evolved through
-various formulations from the late 1960s to the early 1980s 
-\citep{Alldredge1969, Mayhew1979, Alldredge1969,Mayhew1980, Reilly1978, Mayhew1982}.
+various formulations from the late 1960s to the early 1980s
+\citep{Alldredge1969, Mayhew1979, Mayhew1980, Reilly1978, Mayhew1982}.
 For instance, \citet{Mayhew1979} successfully applied an equivalent source
 representation using arrays of dipoles and spherical prisms to model
 satellite magnetic anomaly data. Later,
@@ -394,7 +394,7 @@ directly to a distribution of equivalent point sources on a sphere through
 least squares matrix inversion.
 More recently, \citet{Kother2015} extended the regularized monopole
 approach of \citet{Obrien1994} to global lithospheric field modelling
-using CHAMP satellite data. They placed $\sim30,000$ monopoles on
+using CHAMP satellite data. They placed approximately $30,000$ monopoles on
 an icosahedral grid 100 km below the surface and estimated their
 strengths through an iteratively reweighted least-squares inversion with
 quadratic or entropy-based regularization. This strategy provided
@@ -499,11 +499,11 @@ the two local spherical bases
 
 \begin{equation}
     \mathbf{R} =
-    \begin{vmatrix}
+    \begin{bmatrix}
         \delta_{rr'} & \delta_{r\theta'} & \delta_{r\lambda'} \\
         \delta_{\theta r'} & \delta_{\theta \theta'} & \delta_{\theta \lambda'} \\
         \delta_{\lambda r'} & \delta_{\lambda \theta'} & \delta_{\lambda \lambda'}
-    \end{vmatrix},
+    \end{bmatrix},
 \end{equation}
 where each element $\delta_{uv'}$ represents the dot product $\hat{\mathbf{u}} \cdot \hat{\mathbf{v}}'$.
 The expressions for these direction cosines, which depend on the coordinates of both the source and
@@ -536,11 +536,11 @@ are functions of the radial distances ($r, r'$) and the direction cosines, defin
 
 \begin{equation}
     \mathbf{H} =
-    \begin{vmatrix}
+    \begin{bmatrix}
         H_{rr} & H_{r\theta} & H_{r\lambda}\\
         H_{\theta r} & H_{\theta \theta} & H_{\theta \lambda}\\
         H_{\lambda r} & H_{\lambda \theta} & H_{\lambda \lambda}
-    \end{vmatrix},
+    \end{bmatrix},
 \end{equation}
 
 \noindent
@@ -570,7 +570,8 @@ with the individual elements given by
 These expressions are based on the formulation presented by \citet[see Table 5.2]{Langel1998}.
 However, the components
 $H_{\lambda r}$ and $H_{\lambda \theta}$ in Equations~\ref{eq:H_lambdar} and \ref{eq:H_lambdatheta}
-incorporate the correction proposed by \citet{Dyment1998} During our implementation, we verified that
+incorporate the correction proposed by \citet{Dyment1998}.
+During our implementation, we verified that
 this correction is consistent with the expressions adopted in
 subsequent studies. In particular, a discrepancy in the direction
 cosines associated with these terms was identified and corrected
@@ -594,9 +595,9 @@ components of vectors. First, the geodetic coordinates of both observation point
 converted to their spherical equivalents using the direct, closed-form algebraic method of \citet{Vermeille2002}.
 
 Second, vector quantities are rotated between the local reference frames. The rotation is defined by
-the angular difference between the geodetic and geocentric latitudes,
+the angular difference between the geodetic ($\varphi$) and geocentric ($\phi$) latitudes,
 $\Delta\Phi = \varphi - \phi$ (Figure~\ref{fig_coordinate_systems}b). As part of our workflow, the
-input magnetic moment vector of a source, $\vec{\mathbf{m}}'$, with geodetic components $(m_{x^{\dagger}}, m_{y^{\dagger}}, m_{z^{\dagger}})$,
+input magnetic moment vector of a source, $\vec{\mathbf{m}}$, with geodetic components $(m_{x^{\dagger}}, m_{y^{\dagger}}, m_{z^{\dagger}})$,
 is first rotated into the local spherical frame to obtain the spherical components $(m_x, m_y, m_z)$
 
 \begin{equation}
@@ -663,10 +664,10 @@ from all $M$ equivalent sources. Therefore, the predicted total-field anomaly $d
 observation is given by the summation
 
 \begin{equation}
-    d_i = \sum_{j=1}^{M} A_{ij} m_j,
+    d_i = \sum_{j=1}^{M} A_{ij} p_j,
 \end{equation}
 \noindent
-where $m_j$ is the magnetic moment magnitude of the $j$-th source, and $A_{ij}$ is the element of
+where $p_j = \|\vec{\mathbf{m}}_j\|$ is the magnetic moment magnitude of the $j$-th source, and $A_{ij}$ is the element of
 the sensitivity matrix. This element is defined as
 
 \begin{equation}
@@ -691,21 +692,22 @@ Writing this system of equations for all $N$ observation points results in the m
     \vec{\mathbf{b}_{N1}} \cdot \hat{\mathbf{F}} & \vec{\mathbf{b}_{N2}} \cdot \hat{\mathbf{F}} & \cdots & \vec{\mathbf{b}_{NM}} \cdot \hat{\mathbf{F}} \\
 \end{bmatrix}_{N \times M}
 \begin{bmatrix}
-    m_1 \\ m_2 \\ \vdots \\ m_M
+    p_1 \\ p_2 \\ \vdots \\ p_M
 \end{bmatrix}_{M \times 1}.
 \end{equation}
 
 This linear system, which constitutes the forward problem, can be expressed more compactly as
 
 \begin{equation}
-    \mathbf{d} = \mathbf{A} \mathbf{m}.
+    \mathbf{d} = \mathbf{A} \mathbf{p}.
     \label{eq:forward-problem}
 \end{equation}
 
-The inverse problem consists of estimating the magnetic moment vector $\mathbf{m}$ that best
+The inverse problem consists of estimating the parameter vector $\mathbf{p}$,
+containing the $M$ magnetic moment amplitudes, that best
 fits the observed data $\mathbf{d}^o$. Since this problem is typically ill-posed, we introduce a
-Tikhonov regularization term, leading to a damped least-squares formulation \citep{Soler2021}. In
-its scaled form, the objective function is
+Tikhonov regularization term, leading to a damped least-squares formulation \citep{Soler2021}.
+The objective function is formulated using a scaling factor as
 
 \begin{equation}
     \beta(\mathbf{c}) = [\mathbf{d}^o - \mathbf{U}\mathbf{c}]^\mathsf{T}
@@ -715,7 +717,8 @@ its scaled form, the objective function is
 
 \noindent
 where $\mathbf{W}$ is a diagonal matrix of data weights, $\mathbf{U} = \mathbf{A}\mathbf{S}^{-1}$ is
-the scaled sensitivity matrix, and $\lambda$ is a dimensionless damping parameter. The scaling
+the scaled sensitivity matrix, $\mathbf{c} = \mathbf{S}\mathbf{p}$ is the scaled
+parameter vector, and $\lambda$ is a dimensionless damping parameter. The scaling
 matrix $\mathbf{S}$ is defined as
 
 \begin{equation}
@@ -730,7 +733,7 @@ matrix $\mathbf{S}$ is defined as
 
 \noindent
 with $\sigma_j$ being the standard deviation of the $j$th column of $\mathbf{A}$. This normalization
-makes the coefficients dimensionless and narrows the effective search range for $\lambda$, which can
+makes the vector $\mathbf{c}$ have data units and narrows the effective search range for $\lambda$, which can
 typically vary between $10^{-6}$ and $10^{4}$.
 
 Minimizing the objective function in Equation~\ref{eq:objective-function} leads to the normal equations
@@ -742,26 +745,28 @@ Minimizing the objective function in Equation~\ref{eq:objective-function} leads 
 \end{equation}
 
 \noindent
-whose solution gives the scaled coefficients $\hat{\mathbf{m}}$. The estimated magnetic moments are
+whose solution gives the scaled parameters $\hat{\mathbf{c}}$. The estimated magnetic moments are
 then obtained by removing the scaling
 
 \begin{equation}
-    \hat{\mathbf{m}} = \mathbf{S}^{-1}\hat{\mathbf{c}}.
+    \hat{\mathbf{p}} = \mathbf{S}^{-1}\hat{\mathbf{c}}.
 \end{equation}
 
-Once the vector of moments $\hat{\mathbf{c}}$ is estimated, it can be used not only to reproduce the
+Once the vector of moments $\hat{\mathbf{p}}$ is estimated, it can be used not only to reproduce the
 observed total-field anomaly but also to compute the full anomalous magnetic field vector $\vec{\mathbf{B}}$
-and its components (e.g., $B_r, B_\theta, B_\lambda$) at any location
+and its components at any location
 
 \begin{equation}
-    \vec{\mathbf{B}}({r, \theta, \lambda}) = \sum_{j=1}^{M} \vec{\mathbf{b}_{j}}({r, \theta, \lambda}) \, \hat{m}_j.
+    \vec{\mathbf{B}}({r, \theta, \lambda}) = \sum_{j=1}^{M}
+    \vec{\mathbf{b}_{j}}({r, \theta, \lambda}) \, \hat{p}_j.
 \end{equation}
 
+\noindent
 This capability of retrieving the vector field directly from the equivalent sources makes the method
 particularly powerful for multi-scale magnetic modeling \citep{Li2020, Uppal2025}.
 
 To accurately model complex magnetic anomalies, we employ the dual-layer
-gradient-boosted equivalent sources method introduced by \citet{Uppal2025}, illustrated in Figure~\ref{fig:dual_layer_flowchart}, 
+gradient-boosted equivalent sources method introduced by \citet{Uppal2025}, illustrated in Figure~\ref{fig:dual_layer_flowchart},
 this methodology first fits a deep layer of equivalent sources using block-averaged
 or decimated data to capture the regional, long-wavelength signals.
 Subsequently, a shallow layer is fitted to the residuals of the deep layer to
@@ -771,9 +776,15 @@ is then obtained by combining the contributions from both layers.
 \begin{figure}[htpb]
 \centering
 \includegraphics[width=\textwidth]{figures/fluxogram-dual-layer.png}
-\caption{Flowchart of the dual-layer equivalent sources method,
-illustrating the data decimation, deep source fitting, residual
-calculation, and final grid prediction \citep{Uppal2025}.}
+\caption{Flowchart of the dual-layer equivalent sources method of
+  \citet{Uppal2025}.
+  First, the original data (red hexagons) are decimated using a blocked average
+  procedure and then deep sources (green circles) are fitted to the decimated
+  data. The residuals (purple hexagons) between the original data and the deep
+  source predictions are calculated and shallow sources (blue circles) are
+  fitted to them. Finally, the combined effect is predicted on a regular grid (black
+  triangles) with constant height using both sets of sources.
+}
 \label{fig:dual_layer_flowchart}
 \end{figure}
 
@@ -790,12 +801,12 @@ data, $\mathbf{d}$, is built by summing the contributions from sources fitted in
 local windows
 
 \begin{equation}
-    \mathbf{d} = \sum_{k=1}^{K} \mathbf{A}_k \mathbf{m}_k,
+    \mathbf{d} = \sum_{k=1}^{K} \mathbf{A}_k \mathbf{p}_k,
 \end{equation}
 
 \noindent
 where $\mathbf{A}_k$ is the sensitivity matrix relating the sources in the $k$-th window to all
-observation points, and $\mathbf{m}_k$ is the vector of corrective source moments estimated in that
+observation points, and $\mathbf{p}_k$ is the vector of corrective source moments estimated in that
 window.
 
 The implementation of a window-based method like gradient boosting in spherical coordinates requires
@@ -814,7 +825,7 @@ Algorithm~\ref{alg:spherical-gradient-boosting}.
 \caption{Gradient-Boosted Equivalent Sources on the sphere.}
 \label{alg:spherical-gradient-boosting}
 \begin{algorithmic}[1]
-\State Initialize the global moment vector $\mathbf{m} = \mathbf{0}$.
+\State Initialize the global moment vector $\mathbf{p} = \mathbf{0}$.
 \State Define the initial residual vector $\mathbf{r}_0 = \mathbf{d}^o$.
 \State Define an initial set of latitudinal bands, often with constant width (e.g., every $10^\circ$).
 \For{each latitudinal band $k$}
@@ -825,11 +836,13 @@ Algorithm~\ref{alg:spherical-gradient-boosting}.
 \For{each window index $k$ in the shuffled list}
     \State Select residuals $\tilde{\mathbf{r}}_{k-1}$ for data points inside the $k$-th window.
     \State Compute the local Jacobian matrix $\tilde{\mathbf{A}}_k$ with data points and sources inside the $k$-th window.
-    \State Solve for the corrective moments $\mathbf{m}_k$:
-    \Statex \hspace{\algorithmicindent} $\mathbf{m}_k = (\tilde{\mathbf{A}}_k^\mathsf{T} \tilde{\mathbf{A}}_k + \mu_k \mathbf{I})^{-1} \tilde{\mathbf{A}}_k^\mathsf{T} \tilde{\mathbf{r}}_{k-1}$
-    \State Calculate the global prediction from the local sources: $\mathbf{d}_k = \mathbf{A}_k \mathbf{m}_k$.
+    \State Solve for the corrective moments $\mathbf{p}_k$:
+    \Statex \hspace{\algorithmicindent} $\mathbf{p}_k = (\tilde{\mathbf{A}}_k^\mathsf{T} \tilde{\mathbf{A}}_k + \mu_k \mathbf{I})^{-1} \tilde{\mathbf{A}}_k^\mathsf{T} \tilde{\mathbf{r}}_{k-1}$
+    \State Calculate the global prediction from the local sources: $\mathbf{d}_k
+    = \mathbf{A}_k \mathbf{p}_k$.
     \State Update the global residuals: $\mathbf{r}_k = \mathbf{r}_{k-1} - \mathbf{d}_k$.
-    \State Accumulate the global solution by adding $\mathbf{m}_k$ to the corresponding entries in $\mathbf{m}$.
+    \State Accumulate the global solution by adding $\mathbf{p}_k$ to the
+    corresponding entries in $\mathbf{p}$.
 \EndFor
 \end{algorithmic}
 \end{algorithm}
@@ -842,7 +855,7 @@ requirements because only the small, local sensitivity matrices ($\tilde{\mathbf
 explicitly constructed, making the method highly scalable for datasets with millions of observations.
 
 
-\section{Hyperparameter Tuning with Block Cross-Validation for Airborne Surveys}
+\section{Hyperparameter tuning with block cross-validation for airborne surveys}
 
 A crucial step in our methodology is the selection of optimal hyperparameters for the equivalent
 source model, primarily the depth of the sources and the regularization parameter. In the context
@@ -876,7 +889,7 @@ source studies on airborne data to guide the selection of optimal model paramete
         \State Initialize a list of fold scores, `scores`.
         \For{$i = 1$ to $k$}
             \State Set test set to data in blocks from fold $F_i$; training set to data from all other folds.
-            \State Fit model $\mathbf{m}_i$ on the training set using hyperparameters $\theta$.
+            \State Fit model $\mathbf{p}_i$ on the training set using hyperparameters $\theta$.
             \State Predict data $\mathbf{d}_{\text{pred}}$ on the coordinates of the test set.
             \State Calculate score$_i$ (e.g., RMSE) and add it to `scores`.
         \EndFor
@@ -903,10 +916,11 @@ generation, Pandas \citep{pandas} for tabular data handling,
 Xarray \citep{Hoyer2017} for working with gridded datasets,
 Pooch \citep{Uieda2020} for downloading and caching data,
 Verde \citep{Uieda2018} for spatial interpolation and moving-window analysis,
-and
 Harmonica \citep{Harmonica2024} for potential field data
-processing and modelling. Jupyter Notebooks were used for code development,
-documentation, and reproducibility.
+processing and modelling,
+Boule \citep{boule} for ellipsoids and coordinate conversions,
+and
+Jupyter Notebooks \citep{Granger2021,KluyverThomas2016} for code development and documentation.
 
 The aeromagnetic data used in this study are publicly available from the
 Brazilian National Agency of Petroleum, Natural Gas and Biofuels (ANP) and the
