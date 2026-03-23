@@ -9,12 +9,12 @@ This repository contains the data and source code used to produce the results
 presented in:
 
 > Siqueira-Macedo, A., Uieda, L., Uppal, I. (2026). Magnetic dual-layer
-> equivalent sources on the sphere. EarthArXiv.
+> equivalent sources on the sphere. EarthArXiv. doi:10.31223/X5M19R
 
 |  | Info |
 |-:|:-----|
 | Version of record | https://doi.org/JOURNAL_DOI |
-| Open-access version on EarthArXiv | https://doi.org/EARTHARXIV_DOI |
+| Open-access version on EarthArXiv | https://doi.org/10.31223/X5M19R |
 | Archive of this repository | https://doi.org/10.5281/zenodo.18509844 |
 | Reproducing our results | [`REPRODUCING.md`](REPRODUCING.md) |
 
