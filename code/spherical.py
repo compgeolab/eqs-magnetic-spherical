@@ -94,9 +94,9 @@ def dipole_magnetic_geodetic(coordinates, dipoles, magnetic_moments):
     """
     # Convert coordinates and dipole moments to spherical
     coordinates_sph = bl.WGS84.geodetic_to_spherical(
-        coordinates[0], coordinates[1], coordinates[2]
+        (coordinates[0], coordinates[1], coordinates[2])
     )
-    dipoles_sph = bl.WGS84.geodetic_to_spherical(dipoles[0], dipoles[1], dipoles[2])
+    dipoles_sph = bl.WGS84.geodetic_to_spherical((dipoles[0], dipoles[1], dipoles[2]))
     magnetic_moments_sph = vector_geodetic_to_spherical(
         eastward=magnetic_moments[0],
         northward=magnetic_moments[1],
@@ -461,9 +461,9 @@ class EquivalentSourcesMagGeod:
         else:
             self.source_coordinates_ = self.source_coordinates
         # Convert everything to a spherical coordinate system
-        coordinates_sph = bl.WGS84.geodetic_to_spherical(*coordinates)
+        coordinates_sph = bl.WGS84.geodetic_to_spherical((coordinates[0], coordinates[1], coordinates[2]))
         source_coordinates_sph = bl.WGS84.geodetic_to_spherical(
-            *self.source_coordinates_
+            (self.source_coordinates_[0],self.source_coordinates_[1],self.source_coordinates_[2])
         )
         n_data = coordinates[0].size
         n_params = source_coordinates_sph[0].size
@@ -612,9 +612,9 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
             self.window_size_ = self.window_size
 
         # Convert everything to a spherical coordinate system
-        coordinates_sph = bl.WGS84.geodetic_to_spherical(*coordinates)
+        coordinates_sph = bl.WGS84.geodetic_to_spherical((coordinates[0], coordinates[1], coordinates[2]))
         source_coordinates_sph = bl.WGS84.geodetic_to_spherical(
-            *self.source_coordinates_
+            (self.source_coordinates_[0],self.source_coordinates_[1],self.source_coordinates_[2])
         )
         unit_moment = vector_geodetic_to_spherical(
             *hm.magnetic_angles_to_vec(
