@@ -33,36 +33,24 @@ sparsity-inducing transformations using wavelets and quadtree discretization
 deconvolution exploiting Block-Toeplitz Toeplitz-block (BTTB) structures
 \citep{Takahashi2020,Takahashi2022}.
 
-Most equivalent source approaches are formulated in Cartesian
-coordinates and applied to relatively small areas.
-In these cases, data which are naturally registered using geodetic or geocentric
-spherical coordinates are projected onto a planar surface using a chosen map
-projection to use the Cartesian formulation.
-An issue arises when dealing with large areas where distortions in distances,
-areas, or relative positioning from the projection become significant.
-Thus, the limitation does not arise from the Cartesian formulation
-itself, but from representing data distributed over the curved
-Earth on a planar surface. In this context, a spherical
-formulation of the forward and inverse problem is more suitable for
-regional to continental-scale modeling because it avoids the projection and its
-associated distortions.
-While a Cartesian formulation could still be applied using a geocentric
-Cartesian system, the mathematical and computational implementation of the
-forward problem is more time consuming than a spherical formulation because of
-the many coordinate conversions and rotations involved \citep{WildPfeiffer2008}.
-
-%The equivalent source method in spherical coordinates was first introduced by
-%\citet{VonFrese1981} as a computationally efficient alternative to spherical harmonics,
-%which become expensive at high degrees, and to Fourier transforms, which require planar
-%regridding of spherical data. Their approach relates potential field anomalies directly to
-%a distribution of equivalent point sources on a sphere through least squares inversion,
-%allowing the anomalies to be reproduced with far fewer parameters than spherical harmonics.
-%This formulation is numerically efficient because, once the source coefficients are solved,
-%continuation, differentiation, and filtering operations can be carried out by simply
-%recomputing the anomaly of the same source distribution at new conditions. Moreover, they
-%demonstrated that magnetic anomalies could be differentially reduced to the pole using
-%equivalent dipoles, thus enabling pole reduction directly in the spherical domain without
-%distortion.
+Most equivalent source approaches are formulated in Cartesian coordinates, which
+are well-suited for relatively small areas. To apply these methods to larger
+regions, data natively registered in geodetic 
+coordinates must first be projected onto a planar surface. Although this
+projection intrinsically introduces distortions in distances, areas, and
+relative positioning, quantifying the exact impact of these distortions
+relative to typical survey uncertainties is an extensive task. However, the
+fundamental limitation of Cartesian formulations becomes absolute at the
+global scale, where no single map projection is adequate and periodic boundary
+conditions in longitude are required. Therefore, a spherical formulation of
+the forward and inverse problem offers a mathematically rigorous alternative.
+By operating directly on the curved Earth and avoiding planar projections, the
+spherical approach provides an exact solution that is uniquely capable of
+seamless modeling from regional scales to global satellite datasets.
+% While a Cartesian formulation could still be applied using a geocentric
+% Cartesian system, the mathematical and computational implementation of the
+% forward problem is more time consuming than a spherical formulation because of
+% the many coordinate conversions and rotations involved \citep{WildPfeiffer2008}.
 
 The use of equivalent sources for modeling the Earth's magnetic field evolved through
 various formulations from the late 1960s to the early 1980s
@@ -628,12 +616,11 @@ source studies on airborne data to guide the selection of optimal model paramete
     \centering
     \includegraphics[width=1\linewidth]{figures/grided-TFA-B.jpeg}
     \caption{Gridded interpolation results for the total-field anomaly and its
-        vector components (Be, Bn, Bu). The first row \textbf{(a-d)} shows the
-        fields predicted (``Predicted'') by the dual-layer model. The second row
-        \textbf{(e-h)} shows the true synthetic fields (``True'') for comparison.
-        The third row \textbf{(i-l)} shows the final residuals (``Residuals"),
-        corresponding to the difference between the true and predicted
-        fields.}
+    vector components (Be, Bn, Bu). The first row \textbf{(a-d)} shows the
+    true synthetic fields (``True''). The second row \textbf{(e-h)} shows the
+    fields predicted (``Predicted'') by the dual-layer model. The third row
+    \textbf{(i-l)} shows the final residuals (``Residuals''), corresponding to
+    the difference between the true and predicted fields.}
     \label{fig_grid_results}
 \end{figure}
 
@@ -663,6 +650,9 @@ points, whose coordinates were used to generate the synthetic dataset. The
 resulting total-field anomaly is shown in
 Figure~\ref{fig_decomposition}a.
 
+For the modeling process, the equivalent sources in both the deep and shallow
+layers were defined as magnetic dipoles with an assigned magnetization direction
+of $90^{\circ}$ inclination and $0^{\circ}$ declination.
 The deep layer was estimated from a block-reduced version of the synthetic
 dataset in order to isolate the long-wavelength components of the magnetic
 field. A block-reduction procedure based on the mean was applied using a
@@ -781,8 +771,8 @@ proposed methodology for processing large-scale magnetic datasets.
     \includegraphics[width=1\linewidth]{figures/comparison-blockreduce.jpeg}
     \caption{Effect of varying block-mean size on the predicted total-field
     anomaly for the same region used in the Paraná Basin ANP data.
-    \textbf{a--d)} Observed total-field anomaly gridded from different
-    block-mean decimations. \textbf{e--h)} Predicted total-field anomaly
+    \textbf{a--c)} Observed total-field anomaly gridded from different
+    block-mean decimations. \textbf{e--f)} Predicted total-field anomaly
     using the spherical dual-layer gradient-boosted equivalent sources.}
     \label{fig_real_blockmean}
 \end{figure}
@@ -948,7 +938,7 @@ magnetic field from observations of the total-field anomaly.
 \section{Conclusions}
 
 This study presented and systematically validated a spherical equivalent
-sources framework for large-scale magnetic data processing, interpolation, and
+sources framework for large-scale magnetic data continuation, interpolation, and
 transformation. The proposed methodology integrates dual-layer equivalent
 sources modeling \citep{Uppal2025}, gradient-boosting
 \citep{Soler2021}, and spatial cross-validation into a unified and
@@ -1029,7 +1019,11 @@ compilations involving multiple surveys and tens to hundreds of millions of
 data points without access to significant computational resources.
 Further optimization of the equivalent sources methods would be required to
 make it feasible to use our method to generate a consistent and integrated
-model for continental scale data compilations.
+model for continental scale data compilations. Additionally, future work
+will focus on a comprehensive quantitative comparison between our spherical
+framework and traditional Cartesian approaches. This comparison will allow
+us to rigorously assess the impact of map projection distortions and Earth's
+curvature on large-scale magnetic modeling.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section*{Open research}
