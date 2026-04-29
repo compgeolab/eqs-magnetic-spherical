@@ -806,16 +806,17 @@ To evaluate the performance of the proposed methodology under realistic
 conditions, it was applied to airborne magnetic data acquired over the Paraná
 Basin, Brazil.
 The dataset, provided by the Agência Nacional do Petróleo (ANP;
-\url{https://reate.cprm.gov.br/anp/TERRESTRE}),
-covers latitudes from $-24.14^{\circ}$ to
-$-14.14^{\circ}$ and longitudes from $-56.44^{\circ}$ to $-46.96^{\circ}$,
-encompassing one of the largest sedimentary basins in South America.
-Data acquisition was conducted along north--south flight lines spaced
+\url{https://reate.cprm.gov.br/anp/TERRESTRE}), covers latitudes from
+$-24.14^{\circ}$ to $-14.14^{\circ}$ and longitudes from $-56.44^{\circ}$ to
+$-46.96^{\circ}$, encompassing one of the largest sedimentary basins in South
+America. Data acquisition was conducted along north--south flight lines spaced
 approximately 6~km apart, with east--west control lines every 18~km, at an
 average altitude of 1800~m. Horizontal and vertical positioning were obtained
-using GPS, ensuring high positional accuracy. The dataset was originally
-referenced to the SAD-69 datum and subsequently converted to WGS-84 using
-official transformation parameters.
+using GPS, ensuring high positional accuracy. According to the official
+processing report, the data were fully levelled using Oasis Montaj following a
+two-stage procedure to minimize differences at flight line intersections. The
+dataset was originally referenced to the SAD-69 datum and subsequently
+converted to WGS-84 by the data provider.
 The original raw data were sampled at 100~Hz, which results in approximately
 one data points every 8 cm.
 This leads to an unnecessarily large dataset given the 6 km line spacing.
@@ -935,16 +936,7 @@ of the proposed methodology to recover multiple components of the anomalous
 magnetic field from observations of the total-field anomaly.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusions}
-
-This study presented and systematically validated a spherical equivalent
-sources framework for large-scale magnetic data continuation, interpolation, and
-transformation. The proposed methodology integrates dual-layer equivalent
-sources modeling \citep{Uppal2025}, gradient-boosting
-\citep{Soler2021}, and spatial cross-validation into a unified and
-computationally efficient workflow.
-Our equivalent sources formulation can work with data in both spherical and
-geodetic coordinate systems.
+\section{Discussion}
 
 The synthetic data experiments demonstrated that the dual-layer configuration
 provides a robust mechanism for separating long- and short-wavelength
@@ -956,35 +948,34 @@ efficient hyperparameter tuning and inversion without compromising spectral
 fidelity.
 Cross-validation results obtained from the synthetic dataset showed a
 well-defined minimum for the deep layer, indicating a stable solution.
-The cross-validation of the shallow layer
-exhibited a less well-defined minimum, reflecting the decreased sensitivity of
-near-surface sources to depth and regularization. These results highlight the
-importance of independent parameter tuning and justify the adoption of separate
+The cross-validation of the shallow layer exhibited a less well-defined
+minimum, reflecting the decreased sensitivity of near-surface sources to
+depth and regularization. These results highlight the importance of
+independent parameter tuning and justify the adoption of separate
 optimization strategies for regional and local components.
-Moreover, our synthetic data results show that our spherical dual-layer method
-is able to accurately recover the magnetic field components from the
-total-field anomaly observations.
-This was shown to be theoretically possible through the use of Fourier
-transform by \citet{Lima2009} and through the use of equivalent sources by
-\citet{Li2020}.
-Here, we demonstrate that this can also be achieved in a spherical or geodetic
-reference frame through the use of equivalent sources.
+Moreover, our synthetic data results show that our spherical dual-layer
+method is able to accurately recover the magnetic field components from the
+total-field anomaly observations. This was shown to be theoretically possible
+through the use of Fourier transform by \citet{Lima2009} and through the use
+of equivalent sources by \citet{Li2020}. Here, we demonstrate that this can
+also be achieved in a spherical or geodetic reference frame through the use
+of equivalent sources.
 
 The application to real airborne magnetic data from the Paraná Basin confirmed
 the scalability and robustness of the proposed workflow under realistic
 conditions, including heterogeneous sampling density, acquisition artifacts,
-and large data volumes (upward of 1.5 million data points). A detailed analysis
-of different spatial decimation strategies demonstrated that decimation using
-coarse block sizes (of the order of the line spacing), although computationally
-efficient, leads to significant attenuation of short-wavelength anomalies and
-compromises the recovery of near-surface sources. Conversely, data decimation
-using a block size that is compatible with the final grid resolution preserved
-the amplitude of short-wavelength anomalies and resulted in a grid that is
-largely indistinguishable from the one produced with the full dataset.
-Moreover, the processing time for the reduced dataset was approximately 20\%
-smaller than for the full dataset. Therefore, we recommend always decimating
-the input data using a block mean operation with block size equal to the
-desired grid spacing \citep{Smith1990}.
+and large data volumes (upward of 1.5 million data points). A detailed
+analysis of different spatial decimation strategies demonstrated that
+decimation using coarse block sizes (of the order of the line spacing),
+although computationally efficient, leads to significant attenuation of
+short-wavelength anomalies and compromises the recovery of near-surface
+sources. Conversely, data decimation using a block size that is compatible
+with the final grid resolution preserved the amplitude of short-wavelength
+anomalies and resulted in a grid that is largely indistinguishable from the
+one produced with the full dataset. Moreover, the processing time for the
+reduced dataset was approximately 20\% smaller than for the full dataset.
+Therefore, we recommend always decimating the input data using a block mean
+operation with block size equal to the desired grid spacing \citep{Smith1990}.
 
 The availability of vector components provides some advantages over traditional
 derivative-based interpretation techniques. Magnetic derivatives are inherently
@@ -992,31 +983,39 @@ sensitive to noise, interpolation artifacts, and uneven data coverage,
 particularly in continental-scale surveys. In contrast, the
 equivalent-source-based predicted field components and amplitude produces
 smooth, physically constrained fields that retain geological meaning while
-avoiding noise amplification.
-The anomalous field amplitude is particularly useful for interpretation and
-geometry inversion workflows.
-As demonstrated by \citet{HidalgoGato2021},
-the inversion of basement relief from the amplitude of the magnetic field
-is only
-weakly dependent on the often unknown magnetization direction. This characteristic
-allows reliable structural characterization even in the presence of
-remanent magnetization and limited prior information. Consequently, the
-framework proposed here offers a solid foundation for subsequent structural
-mapping, susceptibility inversion, and integrated geophysical modeling.
+avoiding noise amplification. The anomalous field amplitude is particularly
+useful for interpretation and geometry inversion workflows.
+As demonstrated by \citet{HidalgoGato2021}, the inversion of basement relief
+from the amplitude of the magnetic field is only weakly dependent on the
+often unknown magnetization direction. This characteristic allows reliable
+structural characterization even in the presence of remanent magnetization
+and limited prior information. Consequently, the framework proposed here
+offers a solid foundation for subsequent structural mapping, susceptibility
+inversion, and integrated geophysical modeling.
 
-Overall, the results indicate that the spherical dual-layer
-gradient-boosted equivalent sources method constitutes a flexible, scalable,
-and physically consistent solution for magnetic data processing. The
-framework is capable of handling very large datasets while preserving
-short- and long-wavelength of the magnetic field and maintaining manageable computational
-requirements.
-The method proposed here is able to handle millions of
-data points in a modest computer in the timescale of hours.
-However, the spherical calculations are significantly slower than their
-Cartesian counterparts.
-Thus, the current formulation will likely struggle to process larger
-compilations involving multiple surveys and tens to hundreds of millions of
-data points without access to significant computational resources.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusions}
+
+This study presented and systematically validated a spherical equivalent
+sources framework for large-scale magnetic data continuation, interpolation,
+and transformation. The proposed methodology integrates dual-layer equivalent
+sources modeling \citep{Uppal2025}, gradient-boosting \citep{Soler2021},
+and spatial cross-validation into a unified and computationally efficient
+workflow. Our equivalent sources formulation can work with data in both
+spherical and geodetic coordinate systems.
+
+Overall, the results indicate that the spherical dual-layer gradient-boosted
+equivalent sources method constitutes a flexible, scalable, and physically
+consistent solution for magnetic data processing. The framework is capable of
+handling very large datasets while preserving short- and long-wavelength of
+the magnetic field and maintaining manageable computational requirements.
+The method proposed here is able to handle millions of data points in a modest
+computer in the timescale of hours. However, the spherical calculations are
+significantly slower than their Cartesian counterparts. Thus, the current
+formulation will likely struggle to process larger compilations involving
+multiple surveys and tens to hundreds of millions of data points without
+access to significant computational resources.
 Further optimization of the equivalent sources methods would be required to
 make it feasible to use our method to generate a consistent and integrated
 model for continental scale data compilations. Additionally, future work
