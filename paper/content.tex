@@ -935,6 +935,39 @@ in the total-field anomaly and amplitude maps. Together, these results confirm t
 of the proposed methodology to recover multiple components of the anomalous
 magnetic field from observations of the total-field anomaly.
 
+A comprehensive summary of the hyperparameters and processing variables
+used throughout our methodology, for both synthetic and real data
+applications, is presented in Table~\ref{tab_parameters}.
+
+\begin{table}[ht!]
+    \centering
+    \caption{Summary of the hyperparameters and processing parameters used for
+    the dual-layer equivalent sources inversion in both synthetic and real
+    data applications.}
+    \label{tab_parameters}
+    \begin{tabular}{llcc}
+        \toprule
+        \textbf{Layer} & \textbf{Parameter} & \textbf{Synthetic Data} & \textbf{Real Data} \\
+        \midrule
+        \textbf{Deep}  & Data decimation block size & $0.3^{\circ}$ ($\sim$33~km) & $0.1^{\circ}$ ($\sim$11~km) \\
+                       & Window size                & N/A (entire dataset)      & N/A (entire dataset) \\
+                       & CV spatial block size      & $1^{\circ}$ ($\sim$111~km)& $0.45^{\circ}$ ($\sim$50~km) \\
+                       & Tested depth range         & 90--270~km                & 70--130~km \\
+                       & Optimal relative depth     & 135~km                    & 100~km \\
+                       & Tested damping range       & $10^{2}$--$10^{6}$        & $10^{0}$--$10^{4}$ \\
+                       & Optimal damping            & $10^{3}$                  & $10^{2}$ \\
+        \midrule
+        \textbf{Shallow}& Window size               & $2^{\circ}$ ($\sim$220~km)& $1.5^{\circ}$ \\
+                       & CV spatial block size      & $0.1^{\circ}$ ($\sim$12~km)& $0.18^{\circ}$ ($\sim$20~km) \\
+                       & Tested depth range         & 15--30~km                 & 6--12~km \\
+                       & Optimal relative depth     & 27~km                     & 9~km \\
+                       & Tested damping range       & $10^{1}$--$10^{5}$        & $10^{2}$--$10^{6}$ \\
+                       & Optimal damping            & $10^{2}$                  & $10^{4}$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Discussion}
 
