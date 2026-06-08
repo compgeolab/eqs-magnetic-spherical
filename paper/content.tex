@@ -109,7 +109,9 @@ inversion from being dominated by the shallow layer.
 A recent refinement by \citet{Uppal2025} overcomes these issues by fitting the
 layers sequentially: the deep layer is fitted first to a block-averaged,
 long-wavelength version of the data, and the shallow layer is then fitted to
-the high-frequency residuals.
+the high-frequency residuals.Expanding on this sequential strategy,
+\citet{Heincke2026} successfully utilized three equivalent source layers that
+are subsequently fitted to model large-scale magnetic anomalies.
 
 This work introduces a unified method that simultaneously addresses both the
 computational and geometric challenges inherent in large-scale magnetic data
@@ -883,9 +885,17 @@ decimation provides a roughly 20\% reduction in processing time relative to the
 full dataset, while preserving the dominant short- and long-wavelength magnetic
 features.
 
-Based on this trade-off between computational efficiency and spectral
-preservation, the dataset decimated with a block size of $0.0023^{\circ}$ was
-selected for the subsequent analyses.
+While the grids produced from the complete dataset and the data decimated at
+$0.0023^{\circ}$ appear visually identical at a regional scale, closer inspection
+of the short-wavelength features reveals the true impact of the decimation
+strategy. The coarser block-mean decimation ($0.06^{\circ}$) significantly
+smooths out the sharp, high-frequency anomalies associated with near-surface
+sources. In contrast, decimation using a block size compatible with the final
+grid resolution ($0.0023^{\circ}$) exceptionally preserves these high-frequency
+details, yielding results strictly equivalent to the full dataset but with
+enhanced computational efficiency. Based on this optimal trade-off between
+minimizing processing time and maximizing spectral preservation, the dataset
+decimated at $0.0023^{\circ}$ was selected for the subsequent analyses.
 The hyperparameters of the deep layer were selected through a block K-fold
 cross-validation procedure. The tested
 parameter space comprised damping values of 1, 100, and 10,000 and source
