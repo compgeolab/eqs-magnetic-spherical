@@ -655,7 +655,7 @@ class EquivalentSourcesMagGeodGB(EquivalentSourcesMagGeod):
             window_indices = rich.progress.track(window_indices)
         for i in window_indices:
             # Skip windows with no data in them
-            if data_indices[i][0].size == 0:
+            if data_indices[i][0].size == 0 or source_indices[i][0].size == 0:
                 continue
             # Select data and sources inside the window
             coordinates_window = tuple(c[data_indices[i]] for c in coordinates_sph)
