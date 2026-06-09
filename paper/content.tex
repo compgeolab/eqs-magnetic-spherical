@@ -10,7 +10,7 @@ The method approximates observed anomalies using a layer of fictitious sources.
 Once the physical properties of these sources are estimated, they can be used
 to compute derived quantities at any location, such as data continuation
 \citep{Emilia1973, ZhiWen2022, Li2023}, gridding and interpolation
-\citep{Mendonca1994, Mendonca1995, Dampney1969, Li2006, Cordell1992}, and
+\citep{Mendonca1994, Mendonca1995, Dampney1969, Li2006, Cordell1992, Ebbing2021}, and
 reduction to the pole \citep{Guspi2009, Li2001, Silva1986}.
 
 Although effective, the practical application of the equivalent sources
@@ -109,7 +109,7 @@ inversion from being dominated by the shallow layer.
 A recent refinement by \citet{Uppal2025} overcomes these issues by fitting the
 layers sequentially: the deep layer is fitted first to a block-averaged,
 long-wavelength version of the data, and the shallow layer is then fitted to
-the high-frequency residuals.Expanding on this sequential strategy,
+the high-frequency residuals. Expanding on this sequential strategy,
 \citet{Heincke2026} successfully utilized three equivalent source layers that
 are subsequently fitted to model large-scale magnetic anomalies.
 
@@ -671,8 +671,8 @@ The hyperparameters of the deep layer were selected through a block K-fold
 cross-validation procedure applied to the block-reduced dataset. The tested
 parameter space comprised five relative depths ranging from approximately
 90~km to 270~km and five damping values varying from $10^{2}$ to $10^{6}$,
-resulting in 25 parameter combinations. Spatial blocks of 1$^{\circ}$ (approximately
-111~km) were used to avoid the spatial dependence between samples
+resulting in 25 parameter combinations. Spatial blocks of 1$^{\circ}$ 
+(approximately 111~km) were used to avoid the spatial dependence between samples
 in the training and testing sets during the cross-validation process.
 The cross-validation results are shown in
 Figure~\ref{fig_crossvalidation}a. The minimum RMSE was obtained for a relative
