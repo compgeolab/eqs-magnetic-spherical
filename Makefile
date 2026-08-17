@@ -4,8 +4,9 @@
 ###############################################################################
 ### Git tags for different revisions
 SUBMITTED = submitted
+R1 = R1
 ### Documents to build
-PDF = paper/preprint.pdf paper/manuscript.pdf paper/manuscript-diff-$(SUBMITTED).pdf paper/cover-letter.pdf
+PDF = paper/preprint.pdf paper/manuscript.pdf paper/manuscript-diff-$(SUBMITTED).pdf paper/manuscript-diff-$(R1).pdf paper/cover-letter.pdf
 ### File Types (for dependencies)
 TEX = $(filter-out $(PDF:.pdf=.tex), $(wildcard paper/*.tex))
 TEXVARS = $(wildcard paper/variables/*.tex)
