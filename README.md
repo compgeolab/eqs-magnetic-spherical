@@ -13,7 +13,7 @@ presented in:
 
 |  | Info |
 |-:|:-----|
-| Version of record | https://doi.org/JOURNAL_DOI |
+| Version of record | https://doi.org/10.1029/2026JB034259 |
 | Open-access version on EarthArXiv | https://doi.org/10.31223/X5M19R |
 | Archive of this repository | https://doi.org/10.5281/zenodo.18509844 |
 | Reproducing our results | [`REPRODUCING.md`](REPRODUCING.md) |
